@@ -9,3 +9,7 @@ name = "idns_eth_sdk_ffi"
 crate-type = ["staticlib"]
 
 [dependencies]
+
+
+#IDNS.ETH
+idns-eth-sdk = { path = "../sdk", version = "*" }

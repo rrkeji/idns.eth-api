@@ -1,0 +1,12 @@
+[package]
+name = "idns-eth-sqlite"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+rusqlite = "0.28"
+delay_timer = "0.11"
+anyhow = "1"
+
+#IDNS.ETH
+idns-eth-core = { path = "../idns-core", version = "*" }

@@ -1,0 +1,29 @@
+[package]
+name = "idns-eth-core"
+version = "0.1.0"
+edition = "2021"
+
+
+[dependencies]
+tracing-subscriber = { version = "0.3", features = ["fmt"] }
+tracing = "0.1.15"
+anyhow = "1"
+bytes = "1.1.0"
+thiserror = "1"
+
+#JSON
+serde = "1.0"
+serde_derive = "1.0"
+serde_json = { version = "1.0" }
+
+#HTTP CLIENT
+hyper = { version = "0.14", features = ["full"] }
+tokio = { version = "1", features = ["full"] }
+http = "0.2"
+
+#phrase sr25519
+tiny-bip39 = "1.0"
+sp-core = { version = "6.0.0", features = ["std"] }
+
+[dev-dependencies]
+tokio-test = "*"
