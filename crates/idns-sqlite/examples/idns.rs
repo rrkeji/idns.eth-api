@@ -12,6 +12,10 @@ struct Person {
 }
 
 fn main() -> Result<()> {
+    tracing_subscriber::fmt()
+        .with_max_level(tracing::Level::DEBUG)
+        .init();
+
     let database_filename = "data.db";
 
     let token = IdnsToken {
@@ -22,13 +26,17 @@ fn main() -> Result<()> {
     let conn = Connection::open(database_filename, &token)?;
 
     conn.execute(
-        "CREATE TABLE person (
+        "
+        CREATE TABLE person (
             id    INTEGER PRIMARY KEY,
             name  TEXT NOT NULL,
-            data  BLOB
-        )",
+            data  BLOB,
+            _cid  TEXT DEFAULT '',
+            _cn INTEGER DEFAULT 0
+        );",
         (), // empty list of parameters.
-    )?;
+    );
+
     let me = Person {
         id: 0,
         name: "Steven".to_string(),

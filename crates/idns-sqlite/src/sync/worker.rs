@@ -1,16 +1,19 @@
-use anyhow::{Error, Result};
-use delay_timer::entity::{DelayTimer, DelayTimerBuilder};
-use delay_timer::prelude::*;
+use anyhow::Result;
+use futures::executor::block_on;
 use idns_eth_core::account::IdnsToken;
-use rusqlite::Connection;
-use std::sync::Arc;
-use std::thread::{current, park, Thread};
+use std::path::Path;
+use std::thread;
+use std::thread::JoinHandle;
+use std::time::Duration;
+
 //
 pub struct Worker {
-    delay_timer: DelayTimer,
-    connection: Arc<Connection>,
+    sync_handle: JoinHandle<()>,
     token: IdnsToken,
 }
+
+unsafe impl Send for Worker {}
+unsafe impl Sync for Worker {}
 
 impl Drop for Worker {
     #[inline]
@@ -18,35 +21,39 @@ impl Drop for Worker {
 }
 
 impl Worker {
-    pub fn new(connection: Arc<Connection>, token: &IdnsToken) -> Self {
-        let delay_timer = DelayTimerBuilder::default().build();
+    pub fn new(path: &String, token: &IdnsToken) -> Self {
+        let token_clone: IdnsToken = token.clone();
+        let str = path.clone();
 
+        let sync_handle = thread::spawn(move || {
+            block_on(async {
+                loop {
+                    let path2 = Path::new(str.as_str());
+                    let token_inner: IdnsToken = token_clone.clone();
+                    // let conn_inner = conn.clone();
+                    if let Err(err) = crate::sync::DataBaseSync::data_sync(path2, token_inner).await
+                    {
+                        println!("err:{}", err);
+                    }
+                    thread::sleep(Duration::from_millis(1000));
+                }
+            })
+        });
         Self {
-            delay_timer,
-            connection,
+            sync_handle,
             token: token.clone(),
         }
     }
 
     pub fn start(&self) -> Result<()> {
-        //
-        self.delay_timer.add_task(
-            TaskBuilder::default()
-                .set_frequency_repeated_by_cron_str("0/6 * * * * ?")
-                .set_maximum_running_time(15)
-                .spawn_async_routine(|| async {
-                    //
-                    println!("ssssssss");
-                })?,
-        )?;
         Ok(())
     }
 
-    pub fn close(self) -> Result<(), (Worker, Error)> {
-        let _ = self
-            .delay_timer
-            .stop_delay_timer()
-            .map_err(|err| (self, err));
-        Ok(())
-    }
+    // pub fn close(self) -> Result<(), (Worker, Error)> {
+    //     let _ = self
+    //         .delay_timer
+    //         .stop_delay_timer()
+    //         .map_err(|err| (self, err));
+    //     Ok(())
+    // }
 }

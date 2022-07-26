@@ -1,4 +1,4 @@
-use anyhow::{anyhow, Context, Result};
+use anyhow::{anyhow, Result};
 use bip39::{Language, Mnemonic, MnemonicType};
 use sp_core::{hexdisplay::HexDisplay, Pair};
 

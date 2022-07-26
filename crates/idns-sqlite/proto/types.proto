@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package idns.sqlite.types;
+
+
+message Column {
+    oneof value {
+        bool null_value = 1;
+        int64 integer_value = 3;
+        float real_value = 5;
+        string string_value = 7;
+        bytes blob_value = 9;
+    }
+}
+
+message Row{
+    repeated Column cols = 1; 
+}

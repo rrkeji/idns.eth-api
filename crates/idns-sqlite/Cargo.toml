@@ -4,9 +4,22 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+tracing-subscriber = { version = "0.3", features = ["fmt"] }
+tracing = "0.1.15"
+
 rusqlite = "0.28"
 delay_timer = "0.11"
 anyhow = "1"
+lazy_static = "1.4"
+futures = "0.3"
+tokio = { version = "1", features = ["full"] }
 
+prost = "0.10"
+prost-types = "0.10"
+bytes = "1.2"
 #IDNS.ETH
 idns-eth-core = { path = "../idns-core", version = "*" }
+idns-eth-ipfs-client = { version = "*", path = "../idns-ipfs-client" }
+
+[build-dependencies]
+prost-build = "0.10"

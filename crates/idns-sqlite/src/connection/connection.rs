@@ -2,13 +2,14 @@ use rusqlite::Connection as RsConnection;
 use std::default::Default;
 use std::path::Path;
 use std::str;
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 
 pub use rusqlite::{Error, OpenFlags, Params, Result, Row, Statement};
 
 use idns_eth_core::account::IdnsToken;
 
 use crate::sync::Worker;
+
 ///
 pub struct Connection {
     raw_connection: Arc<RsConnection>,
@@ -32,11 +33,13 @@ impl Connection {
         token: &IdnsToken,
         flags: OpenFlags,
     ) -> Result<Connection> {
+        let path = path.as_ref();
+        let path_str = path.to_str().unwrap();
         //
         let raw_connection = Arc::new(RsConnection::open_with_flags(path, flags)?);
 
         //进行一些初始化的处理
-        let sync_worker = Worker::new(raw_connection.clone(), token);
+        let sync_worker = Worker::new(&String::from(path_str), token);
         sync_worker.start();
 
         Ok(Connection {
