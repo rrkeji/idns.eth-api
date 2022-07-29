@@ -19,7 +19,7 @@ prost-types = "0.10"
 bytes = "1.2"
 #IDNS.ETH
 idns-eth-core = { path = "../idns-core", version = "*" }
-idns-eth-ipfs-client = { version = "*", path = "../idns-ipfs-client" }
+ipfs-api-backend-hyper = "0.4"
 
 [build-dependencies]
 prost-build = "0.10"

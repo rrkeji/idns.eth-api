@@ -16,3 +16,27 @@ message Column {
 message Row{
     repeated Column cols = 1; 
 }
+ 
+message ColumnSchema{
+    int32 column_id = 1;
+    string name = 2;
+    string column_type = 3;
+    bool notnull = 4;
+    string default_value  = 5;
+    int32 pk = 6;
+}
+
+message TableSchema{
+    string schema_type = 1;
+    string name = 2;
+    string table_name = 3;
+    int32 rootpage  = 4;
+    string sql = 5;
+    repeated ColumnSchema columns = 7;
+}
+
+message Table{
+    TableSchema schema = 1;
+    int32 max_size = 2;
+    repeated string rows = 3;
+}

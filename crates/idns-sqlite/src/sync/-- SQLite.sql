@@ -26,7 +26,7 @@ SELECT * FROM sqlite_master WHERE 1 = 1 ORDER BY name;
 INSERT INTO person (name, data) VALUES ("ss1111", "sssss111");
 
 update person set name = "ssccccc333" where id = 2;
-update person set _cid = "222222220002" where id = 1 and _cn = 74042263;
+update person set _cid = "QmVqUjCFRUCw8MXw9y3P9BPQtASpLdGKzYAUgvJdNUfHPw" where id = 1;
 SELECT * FROM person ORDER BY id ;
 SELECT * FROM idns_table_version ORDER BY id ;
 
@@ -40,9 +40,14 @@ CREATE TABLE idns_table_version (
 );
 
 
-PRAGMA  table_info("person") 
+PRAGMA  table_info("idns_table_version") 
 
 ALTER TABLE person ADD column tt TEXT;
 
 
 SELECT ABS(RANDOM() % 100000000);
+
+SELECT * FROM person where _cid ='' ORDER BY id LIMIT 0,10
+
+
+SELECT id, table_name, cid, version, nonce, sync_status,id_index, cid_index,cn_index,col_count FROM idns_table_version where sync_status = 0 ORDER BY id

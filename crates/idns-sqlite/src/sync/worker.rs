@@ -27,16 +27,21 @@ impl Worker {
 
         let sync_handle = thread::spawn(move || {
             block_on(async {
-                loop {
-                    let path2 = Path::new(str.as_str());
-                    let token_inner: IdnsToken = token_clone.clone();
-                    // let conn_inner = conn.clone();
-                    if let Err(err) = crate::sync::DataBaseSync::data_sync(path2, token_inner).await
-                    {
-                        println!("err:{}", err);
+                let mut rt = tokio::runtime::Runtime::new().unwrap();
+                rt.block_on(async {
+                    loop {
+                        let path2 = Path::new(str.as_str());
+                        let token_inner: IdnsToken = token_clone.clone();
+                        // let conn_inner = conn.clone();
+
+                        if let Err(err) =
+                            crate::sync::DataBaseSync::data_sync(path2, &token_inner).await
+                        {
+                            tracing::error!("err:{}", err);
+                        }
+                        thread::sleep(Duration::from_millis(1000));
                     }
-                    thread::sleep(Duration::from_millis(1000));
-                }
+                });
             })
         });
         Self {

@@ -3,12 +3,25 @@ name = "idns-eth-sdk"
 version = "0.1.0"
 edition = "2021"
 
-
-[lib]
-name = "idns_eth_sdk_ffi"
-crate-type = ["staticlib"]
-
 [dependencies]
+futures = "0.3"
+anyhow = "1.0"
+prost = "0.10"
+prost-types = "0.10"
+bytes = "1.2"
+tokio = { version = "1", features = ["full"] }
 
 #IDNS.ETH
+idns-eth-api = { path = "../api", version = "*" }
 idns-eth-core = { path = "../crates/idns-core", version = "*" }
+idns-eth-networks = { path = "../crates/idns-networks", version = "*" }
+idns-eth-sqlite = { path = "../crates/idns-sqlite", version = "*" }
+
+[build-dependencies]
+prost-build = "0.10"
+
+[dev-dependencies]
+tokio = { version = "1", features = ["full"] }
+tracing-subscriber = { version = "0.3", features = ["fmt"] }
+tracing = "0.1.15"
+anyhow = "1"

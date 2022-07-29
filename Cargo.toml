@@ -1,11 +1,8 @@
 [workspace]
 members = [
-    "node",
+    "api",
     "sdk",
-    "sdk-ffi",
     "crates/idns-core",
     "crates/idns-sqlite",
-    "crates/idns-files",
-    "crates/idns-ipfs-client",
     "crates/idns-networks",
 ]

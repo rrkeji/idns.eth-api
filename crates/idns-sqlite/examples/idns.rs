@@ -11,7 +11,8 @@ struct Person {
     data: Option<Vec<u8>>,
 }
 
-fn main() -> Result<()> {
+#[tokio::main]
+async fn main() -> Result<()> {
     tracing_subscriber::fmt()
         .with_max_level(tracing::Level::DEBUG)
         .init();
@@ -56,7 +57,7 @@ fn main() -> Result<()> {
     })?;
 
     for person in person_iter {
-        println!("Found person {:?}", person.unwrap());
+        println!("Found person {:?}", person?);
     }
 
     let ten_millis = time::Duration::from_millis(1000000);

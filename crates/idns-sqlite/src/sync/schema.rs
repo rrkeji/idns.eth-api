@@ -1,6 +1,7 @@
 use anyhow::{anyhow, Result};
 use idns_eth_core::account::IdnsToken;
 use rusqlite::{Connection, Params};
+use std::ops::Deref;
 use std::path::Path;
 
 #[derive(Debug)]
@@ -10,16 +11,93 @@ pub struct IdnsTableVersion {
     pub cid: String,
     pub version: i32,
     pub sync_status: i32,
-    pub nonce: String,
+    pub nonce: usize,
     pub col_count: usize,
     pub id_index: usize,
     pub cid_index: usize,
     pub cn_index: usize,
+    pub _cid: String,
+    pub _cn: usize,
 }
 
 pub struct SchemaChecker {}
 
 impl SchemaChecker {
+    pub fn get_table_schema<P>(
+        conn: &Connection,
+        where_str: &str,
+        p: P,
+    ) -> Result<Option<crate::types::TableSchema>>
+    where
+        P: Params,
+    {
+        let mut tables = SchemaChecker::get_table_schemas(conn, where_str, p)?;
+
+        if tables.len() > 0 {
+            Ok(tables.pop())
+        } else {
+            Ok(None)
+        }
+    }
+    pub fn get_table_schemas<P>(
+        conn: &Connection,
+        where_str: &str,
+        p: P,
+    ) -> Result<Vec<crate::types::TableSchema>>
+    where
+        P: Params,
+    {
+        let mut stmt = conn.prepare(
+            format!("SELECT * FROM sqlite_master {} ORDER BY name ", where_str).as_str(),
+        )?;
+        let schema_iter = stmt.query_map(p, |row| {
+            let table_name: String = row.get(2)?;
+            //
+            let mut res = Vec::<crate::types::ColumnSchema>::new();
+
+            //
+            let shema = crate::types::TableSchema {
+                schema_type: row.get(0)?,
+                name: row.get(1)?,
+                table_name: table_name,
+                rootpage: row.get(3)?,
+                sql: row.get(4)?,
+                columns: res,
+            };
+            Ok(shema)
+        })?;
+        let mut res = Vec::<crate::types::TableSchema>::new();
+
+        for table_result in schema_iter {
+            if let Ok(mut table) = table_result {
+                let table_name: String = table.table_name.clone();
+                //
+                let mut stmt =
+                    conn.prepare(format!("PRAGMA  table_info(\"{}\")", table_name).as_str())?;
+                let field_iter = stmt.query_map([], |row| {
+                    Ok(crate::types::ColumnSchema {
+                        column_id: row.get(0)?,
+                        name: row.get(1)?,
+                        column_type: row.get(2)?,
+                        notnull: row.get(3)?,
+                        default_value: String::from(""),
+                        pk: row.get(5)?,
+                    })
+                })?;
+                let mut cols_res = Vec::<crate::types::ColumnSchema>::new();
+                for col_result in field_iter {
+                    if let Ok(col) = col_result {
+                        //table
+                        cols_res.push(col);
+                    }
+                }
+                table.columns = cols_res;
+                //table
+                res.push(table);
+            }
+        }
+        Ok(res)
+    }
     //
     pub fn get_ctrl_table<P>(
         conn: &Connection,
@@ -29,33 +107,40 @@ impl SchemaChecker {
     where
         P: Params,
     {
+        tracing::debug!("get_ctrl_table:{:?}", where_str);
+
         let mut stmt = conn.prepare(
             format!(
-                "SELECT id, table_name, cid, version, nonce, sync_status,id_index, cid_index,cn_index,col_count FROM idns_table_version {} ORDER BY id",
+                "SELECT id, table_name, cid, version, nonce, sync_status,id_index, cid_index,cn_index,col_count, _cid, _cn FROM idns_table_version {} ORDER BY id",
                 where_str
             )
             .as_str(),
         )?;
-        let schema_iter = stmt.query_map(p, |row| {
-            Ok(IdnsTableVersion {
-                id: row.get(0)?,
-                table_name: row.get(1)?,
-                cid: row.get(2)?,
-                version: row.get(3)?,
-                nonce: row.get(4)?,
-                sync_status: row.get(5)?,
-                id_index: row.get(6)?,
-                cid_index: row.get(7)?,
-                cn_index: row.get(8)?,
-                col_count: row.get(9)?,
+
+        let schema_iter = stmt
+            .query_map(p, |row| {
+                Ok(IdnsTableVersion {
+                    id: row.get(0)?,
+                    table_name: row.get(1)?,
+                    cid: row.get(2)?,
+                    version: row.get(3)?,
+                    nonce: row.get(4)?,
+                    sync_status: row.get(5)?,
+                    id_index: row.get(6)?,
+                    cid_index: row.get(7)?,
+                    cn_index: row.get(8)?,
+                    col_count: row.get(9)?,
+                    _cid: row.get(10)?,
+                    _cn: row.get(11)?,
+                })
             })
-        })?;
+            .unwrap();
+
         let mut res = vec![];
 
         for table_result in schema_iter {
-            if let Ok(table) = table_result {
-                res.push(table);
-            }
+            let table = table_result?;
+            res.push(table);
         }
         Ok(res)
     }
@@ -78,53 +163,39 @@ impl SchemaChecker {
                 CREATE TABLE idns_table_version (
                     id    INTEGER PRIMARY KEY,
                     table_name  TEXT DEFAULT '',
-                    cid  TEXT DEFAULT '',
                     version INTEGER DEFAULT 0,
-                    nonce INTEGER DEFAULT 0,
                     sync_status INTEGER DEFAULT 0,
                     id_index INTEGER DEFAULT 0,
                     cid_index INTEGER DEFAULT 0,
                     cn_index INTEGER DEFAULT 0,
-                    col_count INTEGER DEFAULT 0
+                    col_count INTEGER DEFAULT 0,
+                    cid TEXT DEFAULT '',
+                    nonce INTEGER DEFAULT 0,
+                    _cid  TEXT DEFAULT '',
+                    _cn INTEGER DEFAULT 0
                 );",
                 (), // empty list of parameters.
             )?;
         }
 
-        tracing::debug!("=======111");
         //判断每个表的schema
-        let mut stmt = conn.prepare("SELECT * FROM sqlite_master where type ='table'")?;
-        let schema_iter = stmt.query_map([], |row| {
-            Ok(crate::sync::TableRow {
-                schema_type: row.get(0)?,
-                name: row.get(1)?,
-                table_name: row.get(2)?,
-                rootpage: row.get(3)?,
-                sql: row.get(4)?,
-            })
-        })?;
+        let schemas = SchemaChecker::get_table_schemas(conn, " where type = 'table' ", [])?;
 
-        for table_result in schema_iter {
-            if let Ok(table) = table_result {
-                tracing::debug!("=======111");
-                //table
-                if table.schema_type == "table" {
-                    SchemaChecker::create_trigger(&conn, table.table_name.as_str())?;
-                }
+        for table in schemas {
+            if table.schema_type == "table" {
+                SchemaChecker::create_trigger(&conn, &table)?;
             }
         }
-
         Ok(())
     }
 
-    pub fn create_trigger(conn: &Connection, table_name: &str) -> Result<()> {
+    pub fn create_trigger(conn: &Connection, table: &crate::types::TableSchema) -> Result<()> {
+        let table_name = table.table_name.clone();
         //判断是否有 cid cn
-        let (has, id_index, cid_index, cn_index, count) =
-            SchemaChecker::has_sync_field(conn, table_name)?;
+        let (has, id_index, cid_index, cn_index, count) = SchemaChecker::has_sync_field(table)?;
         if !has {
             return Ok(());
         }
-        tracing::debug!("=======111222");
         //
         let cnt = crate::utils::query_one_value::<_, i32>(
             conn,
@@ -136,18 +207,34 @@ impl SchemaChecker {
             [],
         )?;
         if cnt == 0 {
-            //
-            conn.execute(
-                format!(
-                    "CREATE  TRIGGER trigger__cid_update_{}  AFTER UPDATE ON {}  for each row
-                BEGIN
-                    update {} set _cid = \"\", _cn =ABS(RANDOM() % 100000000)   where id = new.id and new._cid = old._cid and new._cid != '';
-                END;",
-                    table_name, table_name, table_name
-                )
-                .as_str(),
-                (), // empty list of parameters.
-            )?;
+            if table_name != "idns_table_version" {
+                //
+                conn.execute(
+                    format!(
+                        "CREATE  TRIGGER trigger__cid_update_{}  AFTER UPDATE ON {}  for each row
+                    BEGIN
+                        update {} set _cid = \"\", _cn = ABS(RANDOM() % 100000000)   where id = new.id and new._cid = old._cid and new._cid != '';
+                        update idns_table_version set nonce = ABS(RANDOM() % 100000000) where table_name = '{}';
+                    END;",
+                        table_name, table_name, table_name, table_name
+                    )
+                    .as_str(),
+                    (), // empty list of parameters.
+                )?;
+            } else {
+                //
+                conn.execute(
+                    format!(
+                        "CREATE  TRIGGER trigger__cid_update_{}  AFTER UPDATE OF cid ON {}  for each row
+                    BEGIN
+                        update {} set _cid = \"\", _cn = ABS(RANDOM() % 100000000)   where id = new.id and new._cid = old._cid and new._cid != '';
+                    END;",
+                        table_name, table_name, table_name
+                    )
+                    .as_str(),
+                    (), // empty list of parameters.
+                )?;
+            }
         }
 
         let cnt = crate::utils::query_one_value::<_, i32>(
@@ -161,19 +248,23 @@ impl SchemaChecker {
         )?;
 
         if cnt == 0 {
-            //
-            conn.execute(
-                format!(
-                    "
-                CREATE  TRIGGER trigger__cid_insert_{}  AFTER UPDATE ON {}
-                BEGIN
-                    update {} set _cid = \"\", _cn =ABS(RANDOM() % 100000000)   where id = new.id;
-                END;",
-                    table_name, table_name, table_name
-                )
-                .as_str(),
-                (), // empty list of parameters.
-            )?;
+            if table_name != "idns_table_version" {
+                //
+                conn.execute(
+                    format!(
+                        "
+                    CREATE  TRIGGER trigger__cid_insert_{}  AFTER INSERT ON {}
+                    BEGIN
+                        update {} set _cid = \"\", _cn =ABS(RANDOM() % 100000000)   where id = new.id;
+                        update idns_table_version set nonce = ABS(RANDOM() % 100000000) where table_name = '{}';
+                    END;",
+                        table_name, table_name, table_name, table_name
+                    )
+                    .as_str(),
+                    (), // empty list of parameters.
+                )?;
+            } else {
+            }
         }
         // insert idns_table_version
         let cnt = crate::utils::query_one_value::<_, i32>(
@@ -223,28 +314,24 @@ impl SchemaChecker {
             table_ddl,
             (), // empty list of parameters.
         )?;
-        SchemaChecker::create_trigger(conn, table_name)?;
 
+        //查询一条
+        let tables = SchemaChecker::get_table_schemas(
+            conn,
+            format!(" where name = '{}' ", table_name).as_str(),
+            [],
+        )?;
+
+        if tables.len() == 1 {
+            SchemaChecker::create_trigger(conn, tables.get(0).unwrap())?;
+        }
         Ok(())
     }
 
     /// Returns (has,id_index,cid_index,cn_index,count)
     pub fn has_sync_field(
-        conn: &Connection,
-        table_name: &str,
+        table: &crate::types::TableSchema,
     ) -> Result<(bool, usize, usize, usize, usize)> {
-        let mut stmt = conn.prepare(format!("PRAGMA  table_info(\"{}\")", table_name).as_str())?;
-        let field_iter = stmt.query_map([], |row| {
-            Ok(crate::sync::FieldSchema {
-                cid: row.get(0)?,
-                name: row.get(1)?,
-                field_type: row.get(2)?,
-                notnull: row.get(3)?,
-                dflt_value: row.get(4)?,
-                pk: row.get(5)?,
-            })
-        })?;
-
         let mut has_cid = false;
         let mut has_cn = false;
         let mut has_id = false;
@@ -253,38 +340,31 @@ impl SchemaChecker {
         let mut cid_index: usize = 0usize;
         let mut cn_index: usize = 0usize;
 
-        
+        let mut size = 0usize;
 
-        if let (_, Some(size)) = field_iter.size_hint() {
-            if size == 0usize {
-                return Err(anyhow!("ddddd"));
+        let columns = &table.columns;
+        for field in columns {
+            size = size + 1;
+            if field.name == "id" {
+                has_id = true;
+                id_index = field.column_id as usize;
             }
-            tracing::debug!("=======111222");
-            for field_result in field_iter {
-                if let Ok(field) = field_result {
-                    if field.name == "id" {
-                        has_id = true;
-                        id_index = field.cid;
-                    }
-                    if field.name == "_cid" {
-                        has_cid = true;
-                        cid_index = field.cid;
-                    }
-                    if field.name == "_cn" {
-                        has_cn = true;
-                        cn_index = field.cid;
-                    }
-                }
+            if field.name == "_cid" {
+                has_cid = true;
+                cid_index = field.column_id as usize;
             }
-            Ok((
-                has_cid && has_cn && has_id,
-                id_index,
-                cid_index,
-                cn_index,
-                size,
-            ))
-        } else {
-            Err(anyhow!(""))
+            if field.name == "_cn" {
+                has_cn = true;
+                cn_index = field.column_id as usize;
+            }
         }
+
+        Ok((
+            has_cid && has_cn && has_id,
+            id_index,
+            cid_index,
+            cn_index,
+            size,
+        ))
     }
 }
