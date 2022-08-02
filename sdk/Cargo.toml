@@ -5,11 +5,18 @@ edition = "2021"
 
 [dependencies]
 futures = "0.3"
-anyhow = "1.0"
-prost = "0.10"
-prost-types = "0.10"
+anyhow = "1"
 bytes = "1.2"
 tokio = { version = "1", features = ["full"] }
+tracing-subscriber = { version = "0.3", features = ["fmt"] }
+tracing = "0.1.15"
+lazy_static = "1.4"
+
+prost = "0.11"
+prost-types = "0.11"
+
+serde_json = "1.0"
+serde = { version = "1.0", features = ["derive"] }
 
 #IDNS.ETH
 idns-eth-api = { path = "../api", version = "*" }
@@ -18,10 +25,6 @@ idns-eth-networks = { path = "../crates/idns-networks", version = "*" }
 idns-eth-sqlite = { path = "../crates/idns-sqlite", version = "*" }
 
 [build-dependencies]
-prost-build = "0.10"
+prost-build = "0.11"
 
 [dev-dependencies]
-tokio = { version = "1", features = ["full"] }
-tracing-subscriber = { version = "0.3", features = ["fmt"] }
-tracing = "0.1.15"
-anyhow = "1"

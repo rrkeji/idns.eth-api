@@ -20,3 +20,5 @@ pub(crate) mod utils;
 pub use ipfs_api_backend_hyper as ipfs_api;
 
 pub use connection::*;
+
+pub use utils::{ipfs_add_content, ipfs_get_content};

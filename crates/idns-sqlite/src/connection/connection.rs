@@ -17,6 +17,7 @@ pub struct Connection {
 }
 
 unsafe impl Send for Connection {}
+unsafe impl Sync for Connection {}
 
 impl Drop for Connection {
     #[inline]

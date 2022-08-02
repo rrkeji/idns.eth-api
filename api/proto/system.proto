@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package runnerc.system;
+package idns.system;
 
 message Version{
     enum SoftVersion{
@@ -31,6 +31,24 @@ message CommandResponse{
 message EmptyMessage{
     
 }
+
+message U64Message{
+    uint64 data = 1;
+}
+ 
+message BoolMessage{
+    bool data = 1;
+}
+
+message BytesMessage{
+    bytes data = 1;
+}
+
+message StringMessage{
+    string data = 1;
+}
+
+
 /////////////////////////////
 message WalletGetBalancesResponse{
     string address = 1;

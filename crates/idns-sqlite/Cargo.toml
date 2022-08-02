@@ -14,12 +14,12 @@ lazy_static = "1.4"
 futures = "0.3"
 tokio = { version = "1", features = ["full"] }
 
-prost = "0.10"
-prost-types = "0.10"
+prost = "0.11"
+prost-types = "0.11"
 bytes = "1.2"
 #IDNS.ETH
 idns-eth-core = { path = "../idns-core", version = "*" }
-ipfs-api-backend-hyper = "0.4"
+ipfs-api-backend-hyper = "0.5"
 
 [build-dependencies]
-prost-build = "0.10"
+prost-build = "0.11"

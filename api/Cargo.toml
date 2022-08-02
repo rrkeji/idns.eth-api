@@ -4,12 +4,13 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-prost = "0.10"
-prost-types = "0.10"
+prost = "0.11"
+prost-types = "0.11"
 thiserror = "1.0.30"
 async-trait = "0.1.52"
 tracing = "0.1.15"
 anyhow = "1"
+rusqlite = "0.28"
 
 [build-dependencies]
-prost-build = "0.10"
+prost-build = "0.11"

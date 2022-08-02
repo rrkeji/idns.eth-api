@@ -1,4 +1,4 @@
-use anyhow::{Context, Result};
+// use anyhow::{Context, Result};
 
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
@@ -20,6 +20,8 @@ pub enum Error {
     TryFromIntError,
     #[error(transparent)]
     ProtoDecodeError(#[from] prost::DecodeError),
+    #[error(transparent)]
+    SqliteError(#[from] rusqlite::Error),
     #[error(transparent)]
     Other(#[from] anyhow::Error),
 }

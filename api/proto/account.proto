@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package runnerc.account;
+package idns.account;
 
 message Account{
     string account_id = 1;
@@ -46,8 +46,7 @@ message DecryptMessageResponse{
 }
 
 message LoginRequest{
-    string public_key = 1;
-    string application_key = 2;
+    string password = 2;
     string phrase = 3;
 }
 

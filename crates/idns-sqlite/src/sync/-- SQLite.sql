@@ -51,3 +51,9 @@ SELECT * FROM person where _cid ='' ORDER BY id LIMIT 0,10
 
 
 SELECT id, table_name, cid, version, nonce, sync_status,id_index, cid_index,cn_index,col_count FROM idns_table_version where sync_status = 0 ORDER BY id
+
+
+ CREATE TABLE IF NOT EXISTS t1 (
+  c1 INT,
+  c2 VARCHAR(10)
+);

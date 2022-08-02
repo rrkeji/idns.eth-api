@@ -6,7 +6,7 @@ use std::path::PathBuf;
 /// # 示例
 ///
 /// ```
-/// let storage_path = get_home_path().join("sqlite");
+/// let storage_path = idns_home_path()?.join("sqlite");
 /// std::fs::create_dir_all(storage_path.as_path()).unwrap();
 /// ```
 ///
@@ -20,6 +20,9 @@ pub fn idns_home_path() -> Result<PathBuf> {
                 path
             })
         });
+
+    //
+    let home_path = Some(PathBuf::from("/Users/suhs/jinisu/idns.eth-api/target"));
     //
     if let Some(home_path) = home_path {
         //

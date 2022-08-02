@@ -20,9 +20,9 @@ async fn main() -> Result<()> {
     let database_filename = "data.db";
 
     let token = IdnsToken {
-        public_key: Some(String::from("")),
-        application_key: None,
-        token: None,
+        public_key:  String::from("") ,
+        application_key:  String::from("") ,
+        token: String::from("") ,
     };
     let conn = Connection::open(database_filename, &token)?;
 

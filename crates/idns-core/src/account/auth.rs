@@ -12,39 +12,14 @@ use crate::kvstore::_kvstore_post_request;
 
 #[derive(Debug, Clone)]
 pub struct IdnsToken {
-    pub public_key: Option<String>,
-    pub application_key: Option<String>,
-    pub token: Option<String>,
+    pub public_key: String,
+    pub application_key: String,
+    pub token: String,
 }
 
 unsafe impl Send for IdnsToken {}
 
 impl IdnsToken {
-    ///
-    pub fn new() -> Self {
-        Self {
-            public_key: None,
-            application_key: None,
-            token: None,
-        }
-    }
-    /// 根据public key构建, 只读使用的token
-    pub fn new_from_public_key(public_key: &String) -> IdnsToken {
-        IdnsToken {
-            public_key: Some(public_key.clone()),
-            application_key: None,
-            token: None,
-        }
-    }
-
-    /// 根据内部的token, 不需要public key, token中包含
-    pub fn new_from_token(token: &String) -> IdnsToken {
-        IdnsToken {
-            public_key: None,
-            application_key: None,
-            token: Some(token.clone()),
-        }
-    }
     /// 根据外部应用的token
     pub fn new_from_application_token(
         public_key: &String,
@@ -52,9 +27,9 @@ impl IdnsToken {
         token: &String,
     ) -> IdnsToken {
         IdnsToken {
-            public_key: Some(public_key.clone()),
-            application_key: Some(application_key.clone()),
-            token: Some(token.clone()),
+            public_key: public_key.clone(),
+            application_key: application_key.clone(),
+            token: token.clone(),
         }
     }
 }
@@ -92,7 +67,11 @@ pub async fn login(application_key: &str, public_key: &str, phrase: &str) -> Res
             {
                 tracing::debug!("{}", token);
                 // 空判断
-                Ok(IdnsToken::new_from_token(&token))
+                Ok(IdnsToken::new_from_application_token(
+                    &public_key_str.clone(),
+                    &String::from(application_key),
+                    &token,
+                ))
             } else {
                 Err(anyhow!("Fail login, public_key {}!", public_key))
             }
