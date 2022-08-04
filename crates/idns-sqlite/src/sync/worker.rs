@@ -1,7 +1,6 @@
 use anyhow::Result;
 use futures::executor::block_on;
 use idns_eth_core::account::IdnsToken;
-use std::path::Path;
 use std::thread;
 use std::thread::JoinHandle;
 use std::time::Duration;
@@ -21,25 +20,21 @@ impl Drop for Worker {
 }
 
 impl Worker {
-    pub fn new(path: &String, token: &IdnsToken) -> Self {
+    pub fn new(token: &IdnsToken) -> Self {
         let token_clone: IdnsToken = token.clone();
-        let str = path.clone();
 
         let sync_handle = thread::spawn(move || {
             block_on(async {
                 let mut rt = tokio::runtime::Runtime::new().unwrap();
                 rt.block_on(async {
                     loop {
-                        let path2 = Path::new(str.as_str());
                         let token_inner: IdnsToken = token_clone.clone();
                         // let conn_inner = conn.clone();
 
-                        if let Err(err) =
-                            crate::sync::DataBaseSync::data_sync(path2, &token_inner).await
-                        {
+                        if let Err(err) = crate::sync::DataBaseSync::data_sync(&token_inner).await {
                             tracing::error!("err:{}", err);
                         }
-                        thread::sleep(Duration::from_millis(1000));
+                        thread::sleep(Duration::from_millis(10000));
                     }
                 });
             })

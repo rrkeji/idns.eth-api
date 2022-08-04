@@ -43,9 +43,7 @@ pub async fn login(application_key: &str, public_key: &str, phrase: &str) -> Res
     //
     if let Ok((from, _)) = sr25519::Pair::from_phrase(phrase, None) {
         //
-        let public_key_from_phrase =
-            super::format_public_key::<sp_core::sr25519::Pair>(from.public());
-
+        let public_key_from_phrase = format!("{}", HexDisplay::from(&from.public().as_ref()));
         if public_key_from_phrase == public_key || public_key == "" {
             let mut rng = rand::thread_rng();
 
@@ -53,10 +51,9 @@ pub async fn login(application_key: &str, public_key: &str, phrase: &str) -> Res
 
             let signature = from.sign(&nonce.as_bytes());
             let signature_str = format!("{}", HexDisplay::from(&signature.as_ref()));
-            let public_key_str = format!("{}", HexDisplay::from(&from.public().as_ref()));
 
             let body =
-                &json!({ "public_key": public_key_str,"signature":signature_str,"nonce": nonce})
+                &json!({ "public_key": public_key_from_phrase,"signature":signature_str,"nonce": nonce})
                     .to_string();
             tracing::debug!("{}", body);
             //本地校验public key
@@ -68,7 +65,7 @@ pub async fn login(application_key: &str, public_key: &str, phrase: &str) -> Res
                 tracing::debug!("{}", token);
                 // 空判断
                 Ok(IdnsToken::new_from_application_token(
-                    &public_key_str.clone(),
+                    &public_key_from_phrase.clone(),
                     &String::from(application_key),
                     &token,
                 ))

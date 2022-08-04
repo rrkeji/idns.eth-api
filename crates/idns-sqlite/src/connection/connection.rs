@@ -4,8 +4,9 @@ use std::path::Path;
 use std::str;
 use std::sync::Arc;
 
-pub use rusqlite::{Error, OpenFlags, Params, Result, Row, Statement};
+pub use rusqlite::{Error, OpenFlags, Params, Row, Statement};
 
+use anyhow::{anyhow, Result};
 use idns_eth_core::account::IdnsToken;
 
 use crate::sync::Worker;
@@ -29,18 +30,14 @@ impl Drop for Connection {
 impl Connection {
     ///
     ///
-    pub fn open_with_flags<P: AsRef<Path>>(
-        path: P,
-        token: &IdnsToken,
-        flags: OpenFlags,
-    ) -> Result<Connection> {
-        let path = path.as_ref();
-        let path_str = path.to_str().unwrap();
+    pub fn open_with_flags(token: &IdnsToken, flags: OpenFlags) -> Result<Connection> {
+        let path_str = crate::utils::get_database_path(&token.application_key)?;
+        let path = Path::new(path_str.as_str());
         //
-        let raw_connection = Arc::new(RsConnection::open_with_flags(path, flags)?);
+        let raw_connection = Arc::new(RsConnection::open_with_flags(&path, flags)?);
 
         //进行一些初始化的处理
-        let sync_worker = Worker::new(&String::from(path_str), token);
+        let sync_worker = Worker::new(token);
         sync_worker.start();
 
         Ok(Connection {
@@ -54,9 +51,9 @@ impl Connection {
 impl Connection {
     ///
     ///
-    pub fn open<P: AsRef<Path>>(path: P, token: &IdnsToken) -> Result<Connection> {
+    pub fn open(token: &IdnsToken) -> Result<Connection> {
         let flags = OpenFlags::default();
-        Connection::open_with_flags(path, token, flags)
+        Connection::open_with_flags(token, flags)
     }
     /// Convenience method to run multiple SQL statements (that cannot take any
     /// parameters).
@@ -81,12 +78,16 @@ impl Connection {
     /// or if the underlying SQLite call fails.
     #[inline]
     pub fn execute_batch(&self, sql: &str) -> Result<()> {
-        self.raw_connection.execute_batch(sql)
+        self.raw_connection
+            .execute_batch(sql)
+            .map_err(|e| anyhow!("数据库执行失败:{:?}", e))
     }
     ///
     #[inline]
     pub fn execute<P: Params>(&self, sql: &str, params: P) -> Result<usize> {
-        self.raw_connection.execute(sql, params)
+        self.raw_connection
+            .execute(sql, params)
+            .map_err(|e| anyhow!("数据库执行失败:{:?}", e))
     }
     ///
     #[inline]
@@ -103,9 +104,11 @@ impl Connection {
     pub fn query_row<T, P, F>(&self, sql: &str, params: P, f: F) -> Result<T>
     where
         P: Params,
-        F: FnOnce(&Row<'_>) -> Result<T>,
+        F: FnOnce(&Row<'_>) -> rusqlite::Result<T>,
     {
-        self.raw_connection.query_row(sql, params, f)
+        self.raw_connection
+            .query_row(sql, params, f)
+            .map_err(|e| anyhow!("数据库执行失败:{:?}", e))
     }
     ///
     #[inline]
@@ -120,7 +123,9 @@ impl Connection {
 
     #[inline]
     pub fn prepare(&self, sql: &str) -> Result<Statement<'_>> {
-        self.raw_connection.prepare(sql)
+        self.raw_connection
+            .prepare(sql)
+            .map_err(|e| anyhow!("数据库执行失败:{:?}", e))
     }
 
     #[inline]

@@ -16,6 +16,24 @@ message Column {
 message Row{
     repeated Column cols = 1; 
 }
+
+message IdCidPair{
+    uint64 id = 1;
+    string cid = 2;
+}
+
+message TableCidPair{
+    string table_name = 1;
+    string cid = 2;
+}
+
+message RowsArray{
+    repeated IdCidPair rows = 1;
+}
+
+message TablesArray{
+    repeated TableCidPair tables = 1;
+}
  
 message ColumnSchema{
     int32 column_id = 1;
@@ -33,10 +51,17 @@ message TableSchema{
     int32 rootpage  = 4;
     string sql = 5;
     repeated ColumnSchema columns = 7;
+    string insert_sql = 8;
+}
+
+message TableRowsHash{
+    uint32 offset = 1;
+    uint32 size = 2;
+    string cid = 3;
 }
 
 message Table{
     TableSchema schema = 1;
     int32 max_size = 2;
-    repeated string rows = 3;
+    repeated TableRowsHash rows = 3;
 }

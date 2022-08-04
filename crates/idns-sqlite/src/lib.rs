@@ -14,11 +14,9 @@ lazy_static! {
 }
 
 mod connection;
-pub(crate) mod sync;
-pub(crate) mod utils;
+pub mod sync;
+pub mod utils;
 // pub(crate) use idns_eth_ipfs_client as ipfs_api;
-pub use ipfs_api_backend_hyper as ipfs_api;
-
 pub use connection::*;
-
+pub use ipfs_api_backend_hyper as ipfs_api;
 pub use utils::{ipfs_add_content, ipfs_get_content};

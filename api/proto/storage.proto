@@ -9,7 +9,8 @@ message FileEntity{
     string file_hash = 4;
     uint64 file_size = 5;
     string file_type = 6;
-    bool    is_dir = 7;
+    bool   is_dir = 7;
+    string category = 8;
 }
 
 message ListFilesRequest{
@@ -18,6 +19,12 @@ message ListFilesRequest{
 
 message ListFilesResponse{
     repeated FileEntity files = 1;
+}
+
+message ListFilesByCategoryRequest{
+    uint64 parent_id = 1;
+    string category = 2;
+    uint32 limit = 3;
 }
 
 message MkdirRequest{

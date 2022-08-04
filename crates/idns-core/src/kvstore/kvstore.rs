@@ -16,47 +16,24 @@ impl KVStore {
     ///
     /// 返回
     pub async fn get_value(token: &IdnsToken) -> Result<(String, i64)> {
-        let public_key = token.public_key.clone();
-        let application_key = token.application_key.clone();
-        let token_option = token.token.clone();
-
-        KVStore::get_application_value(
-            public_key.as_str(),
-            application_key.as_str(),
-            if token_option == "" {
-                None
-            } else {
-                Some(token_option.clone())
-            },
-        )
-        .await
+        let token = token.token.clone();
+        //
+        _kvstore_get_request("/kv/get", Some(token), 0i64).await
     }
     /// 设置值, token必须传入
     pub async fn set_value(token: &IdnsToken, old_version: i64, value: &str) -> Result<i64> {
         let token_option = token.token.clone();
         //内部应用
-        let (_, version) = _kvstore_get_request(
+        let (_content, version) = _kvstore_get_request(
             format!("/kv/set/{}", value).as_str(),
             Some(token_option.clone()),
             old_version,
         )
         .await?;
-        Ok(version)
-    }
 
-    /// 通过账户的public_key获取该账户某个应用下的值, token为可选项
-    pub async fn get_application_value(
-        account_public_key: &str,
-        application_public_key: &str,
-        token: Option<String>,
-    ) -> Result<(String, i64)> {
-        //
-        _kvstore_get_request(
-            format!("/kv/aget/{}/{}", application_public_key, account_public_key).as_str(),
-            token,
-            0i64,
-        )
-        .await
+        tracing::debug!("{}", _content);
+
+        Ok(version)
     }
 }
 

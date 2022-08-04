@@ -14,7 +14,7 @@ pub fn init_system_database(token: &IdnsToken) -> Result<()> {
     //
     let storage_path = idns_home_path()?.join("sqlite");
     let _ = std::fs::create_dir_all(storage_path.as_path());
-    let file_name = storage_path.join(".idns.db");
+    let file_name = storage_path.join("idns.db");
 
     let arc_conn = Arc::new(Connection::open(file_name, token)?);
 

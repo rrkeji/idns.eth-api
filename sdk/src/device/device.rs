@@ -6,73 +6,24 @@ use tokio::runtime::Handle;
 
 use crate::sqlite::{ipfs_add_content, ipfs_get_content};
 use idns_eth_api::idns::storage::{
-    FileEntity, ListFilesByCategoryRequest, ListFilesRequest, ListFilesResponse, MkdirRequest,
-    MkdirResponse,
+    FileEntity, ListFilesRequest, ListFilesResponse, MkdirRequest, MkdirResponse,
 };
 use idns_eth_api::idns::system::{BoolMessage, BytesMessage, StringMessage, U64Message};
 
-pub struct StorageServiceImpl;
+pub struct DeviceServiceImpl;
 
-impl StorageServiceImpl {
+impl DeviceServiceImpl {
     pub fn new() -> Self {
         Self {}
     }
 }
 
-impl StorageServiceImpl {
-    ///创建目录
-    pub fn mkdir(&self, parent_id: u64, file_name: &String) -> Result<bool> {
-        let file_entity = FileEntity {
-            id: 0,
-            parent_id: parent_id,
-            file_name: file_name.clone(),
-            file_hash: String::new(),
-            file_size: 0,
-            file_type: String::from("DIR"),
-            category: String::from("DIR"),
-            is_dir: true,
-        };
-        let _ = &self._create_file(&file_entity)?;
-        Ok(true)
-    }
-
-    pub fn list_files_by_category(
-        &self,
-        root_id: u64,
-        category: &String,
-        limit: u32,
-    ) -> Result<Vec<FileEntity>> {
+impl DeviceServiceImpl {
+    pub fn list_devices(&self) -> Result<Vec<FileEntity>> {
         //获取conn
         let arc_conn = crate::get_connection()?;
         let mut stmt = arc_conn.prepare(
-            "SELECT id, parent_id, file_name, file_hash, file_size, file_type, is_dir, category FROM files where parent_id = ?1 and category = ?2 and status = 1 limit 0, ?3",
-        )?;
-        let mut res = Vec::<FileEntity>::new();
-
-        let _iter = stmt.query_map((root_id, category, limit), |row| {
-            let is_dir_int: i32 = row.get(6)?;
-            Ok(FileEntity {
-                id: row.get(0)?,
-                parent_id: row.get(1)?,
-                file_name: row.get(2)?,
-                file_hash: row.get(3)?,
-                file_size: row.get(4)?,
-                file_type: row.get(5)?,
-                is_dir: if is_dir_int == 1 { true } else { false },
-                category: row.get(7)?,
-            })
-        })?;
-        for item in _iter {
-            res.push(item?);
-        }
-        Ok(res)
-    }
-
-    pub fn list_files(&self, root_id: u64) -> Result<Vec<FileEntity>> {
-        //获取conn
-        let arc_conn = crate::get_connection()?;
-        let mut stmt = arc_conn.prepare(
-            "SELECT id, parent_id, file_name, file_hash, file_size, file_type, is_dir, category FROM files where parent_id = ?1 and status = 1",
+            "SELECT id, parent_id, file_name, file_hash, file_size, file_type, is_dir FROM devices where status = 1",
         )?;
         let mut res = Vec::<FileEntity>::new();
 
@@ -86,7 +37,6 @@ impl StorageServiceImpl {
                 file_size: row.get(4)?,
                 file_type: row.get(5)?,
                 is_dir: if is_dir_int == 1 { true } else { false },
-                category: row.get(7)?,
             })
         })?;
         for item in _iter {
@@ -99,7 +49,7 @@ impl StorageServiceImpl {
         //获取conn
         let arc_conn = crate::get_connection()?;
         let mut stmt = arc_conn.prepare(
-            "SELECT id, parent_id, file_name, file_hash, file_size, file_type, is_dir, category FROM files where status = 0",
+            "SELECT id, parent_id, file_name, file_hash, file_size, file_type, is_dir FROM files where status = 0",
         )?;
         let mut res = Vec::<FileEntity>::new();
 
@@ -113,7 +63,6 @@ impl StorageServiceImpl {
                 file_size: row.get(4)?,
                 file_type: row.get(5)?,
                 is_dir: if is_dir_int == 1 { true } else { false },
-                category: row.get(7)?,
             });
             Ok(1)
         })?;
@@ -167,8 +116,8 @@ impl StorageServiceImpl {
         let arc_conn = crate::get_connection()?;
         let is_dir_int = if file.is_dir { 1 } else { 0 };
         arc_conn.execute(
-            "INSERT INTO files (parent_id, file_name, file_hash, file_size, file_type, is_dir, category) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)",
-            (&file.parent_id, &file.file_name, &file.file_hash, &file.file_size, &file.file_type, is_dir_int, &file.category),
+            "INSERT INTO files (parent_id, file_name, file_hash, file_size, file_type, is_dir) VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
+            (&file.parent_id, &file.file_name, &file.file_hash, &file.file_size, &file.file_type, is_dir_int),
         )?;
         Ok(1)
     }
@@ -189,7 +138,7 @@ impl StorageServiceImpl {
     }
 }
 
-impl Handler for StorageServiceImpl {
+impl Handler for DeviceServiceImpl {
     fn execute(&self, request: Command) -> Result<CommandResponse> {
         let service_name = request.service_name;
         let method_name = request.method_name;
@@ -216,17 +165,6 @@ impl Handler for StorageServiceImpl {
                 return response(
                     self.list_deleted_files()
                         .map(|r| ListFilesResponse { files: r }),
-                );
-            } else if method_name == "list_files_by_category" {
-                let request = ListFilesByCategoryRequest::decode(Bytes::from(message))?;
-                //
-                return response(
-                    self.list_files_by_category(
-                        request.parent_id,
-                        &request.category,
-                        request.limit,
-                    )
-                    .map(|r| ListFilesResponse { files: r }),
                 );
             } else if method_name == "create_file" {
                 //

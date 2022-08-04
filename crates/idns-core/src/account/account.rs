@@ -16,20 +16,12 @@ impl Account {
         //生成
         if let Ok((pair, _seed)) = sp_core::sr25519::Pair::from_phrase(secret_phrase, None) {
             let public_key_object = pair.public();
-            let public_key = format_public_key::<sp_core::sr25519::Pair>(public_key_object.clone());
+            let public_key = format!("{}", HexDisplay::from(&public_key_object.as_ref()));
             Ok((public_key.clone(), String::from(secret_phrase)))
         } else {
             Err(anyhow!("Fail!"))
         }
     }
-}
-
-/// Public key type for Runtime
-pub type PublicFor<P> = <P as sp_core::Pair>::Public;
-
-/// formats public key as hex
-pub fn format_public_key<P: sp_core::Pair>(public_key: PublicFor<P>) -> String {
-    format!("0x{}", HexDisplay::from(&public_key.as_ref()))
 }
 
 //
