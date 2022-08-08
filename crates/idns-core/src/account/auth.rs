@@ -52,13 +52,17 @@ pub async fn login(application_key: &str, public_key: &str, phrase: &str) -> Res
             let signature = from.sign(&nonce.as_bytes());
             let signature_str = format!("{}", HexDisplay::from(&signature.as_ref()));
 
-            let body =
-                &json!({ "public_key": public_key_from_phrase,"signature":signature_str,"nonce": nonce})
-                    .to_string();
+            let body = &json!({
+                "public_key": public_key_from_phrase,
+                "application_key":application_key,
+                "signature":signature_str,
+                "nonce": nonce}
+            )
+            .to_string();
             tracing::debug!("{}", body);
             //本地校验public key
             if let Ok(token) =
-                _kvstore_post_request("/login/pk", "application/json;charset=UTF-8", body, None)
+                _kvstore_post_request("/login/app", "application/json;charset=UTF-8", body, None)
                     .await
                     .with_context(|| format!("Fail login with public key {}!", public_key))
             {

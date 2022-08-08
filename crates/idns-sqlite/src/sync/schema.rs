@@ -1,9 +1,7 @@
 use crate::types::TableSchema;
-use anyhow::{anyhow, Result};
+use anyhow::Result;
 use idns_eth_core::account::IdnsToken;
 use rusqlite::{Connection, Params};
-use std::ops::Deref;
-use std::path::Path;
 
 #[derive(Debug)]
 pub struct IdnsTableVersion {
@@ -170,11 +168,20 @@ impl SchemaChecker {
     pub fn create_ctrl_table(conn: &Connection) -> Result<()> {
         conn.execute(
             "
+            CREATE TABLE IF NOT EXISTS idns_database_version (
+                id    INTEGER PRIMARY KEY,
+                version INTEGER DEFAULT 0,
+                cid TEXT DEFAULT ''
+            );",
+            (), // empty list of parameters.
+        )?;
+
+        conn.execute(
+            "
             CREATE TABLE IF NOT EXISTS idns_table_version (
                 id    INTEGER PRIMARY KEY,
                 table_name  TEXT DEFAULT '',
                 version INTEGER DEFAULT 0,
-                sync_status INTEGER DEFAULT 0,
                 id_index INTEGER DEFAULT 0,
                 cid_index INTEGER DEFAULT 0,
                 cn_index INTEGER DEFAULT 0,

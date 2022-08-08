@@ -1,8 +1,8 @@
 use crate::ipfs_api::{IpfsApi, IpfsClient};
 use anyhow::{anyhow, Result};
 use bytes::{BufMut, BytesMut};
-use futures::stream::{FuturesUnordered, StreamExt, TryStreamExt};
-use std::{convert::TryFrom, io::Cursor};
+use futures::stream::StreamExt;
+use std::io::Cursor;
 use tokio::runtime::Handle;
 
 pub fn get_ipfs_client() -> Result<IpfsClient> {

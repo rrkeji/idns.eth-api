@@ -94,13 +94,24 @@ impl DataBaseSync {
     pub async fn download(conn: &Connection, token: &IdnsToken) -> Result<(String, i64)> {
         //
         SchemaChecker::create_ctrl_table(&conn)?;
+
+        let (root_cid, version) = KVStore::get_value(token).await?;
+        //查询是否是新的版本
+        let cnt = crate::utils::query_one_value::<_, usize>(
+            conn,
+            "SELECT COUNT(1) FROM idns_database_version WHERE cid = ?1 and version = ?2",
+            (&root_cid, version),
+        )?;
+        if cnt > 0 {
+            //已经同步过
+            return Ok((root_cid, version));
+        }
+
         //删除版本控制索引
         SchemaChecker::drop_version_trigger(&conn)?;
 
         //获取到根的CID
         (|| async {
-            let (root_cid, version) = KVStore::get_value(token).await?;
-
             let data = crate::utils::ipfs_get_content(&root_cid).await?;
             //获取所有表的hash
             let tables = crate::types::TablesArray::decode(Bytes::from(data))?;
@@ -123,6 +134,12 @@ impl DataBaseSync {
                     [&table.cid, &table.table_name],
                 )?;
             }
+            crate::utils::query_one_value::<_, usize>(
+                conn,
+                "INSERT INTO idns_database_version (cid, version) VALUES (?1 ,?2) ",
+                (&root_cid, version),
+            )?;
+
             Ok((root_cid, version))
         })()
         .await

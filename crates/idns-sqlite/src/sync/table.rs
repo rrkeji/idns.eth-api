@@ -307,7 +307,7 @@ async fn _download_table_row(
         named_temp_map.insert(field.column_id as usize, name);
     }
     for field in columns {
-        if (field.name != "_cid") {
+        if field.name != "_cid" {
             named_args.push((
                 named_temp_map
                     .get(&(field.column_id as usize))

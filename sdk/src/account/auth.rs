@@ -197,8 +197,7 @@ impl AuthServiceImpl {
                         *w = Some(token.clone());
                     }
                     //查看数据库链接
-                    crate::database::init_system_database(&token.clone())?;
-
+                    // crate::database::init_system_database(&token.clone())?;
                     Ok(IdnsToken {
                         application_key: token.application_key,
                         public_key: token.public_key,

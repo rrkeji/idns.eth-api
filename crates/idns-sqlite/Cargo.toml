@@ -17,6 +17,11 @@ tokio = { version = "1", features = ["full"] }
 prost = "0.11"
 prost-types = "0.11"
 bytes = "1.2"
+#JSON
+serde = "1.0"
+serde_derive = "1.0"
+serde_json = { version = "1.0" }
+
 #IDNS.ETH
 idns-eth-core = { path = "../idns-core", version = "*" }
 ipfs-api-backend-hyper = "0.5"

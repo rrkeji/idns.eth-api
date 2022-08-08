@@ -17,7 +17,7 @@ async fn main() -> Result<()> {
     // tracing::info!(public_key);
     // tracing::info!(phrase);
 
-    let token = login(&String::from("IDNS.ETH"), ALICE_PUBLIC_KEY, ALICE_PHRASE).await?;
+    let token = login(&String::from("c85c0ddf8e2debd5883c1f53069e22fbea4b333c562ab3dee51b54485620a918"), ALICE_PUBLIC_KEY, ALICE_PHRASE).await?;
     tracing::info!("Token{:?}", token);
     let value = KVStore::get_value(&token).await?;
     tracing::info!("获取到的值{:?}", value);

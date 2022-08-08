@@ -1,5 +1,7 @@
+mod database;
 mod schema;
 
+pub use database::*;
 pub use schema::*;
 
 use crate::idns_core::{account::IdnsToken, idns_home_path};
@@ -12,11 +14,7 @@ use anyhow::Result;
 pub fn init_system_database(token: &IdnsToken) -> Result<()> {
     tracing::debug!("初始化系统数据库");
     //
-    let storage_path = idns_home_path()?.join("sqlite");
-    let _ = std::fs::create_dir_all(storage_path.as_path());
-    let file_name = storage_path.join("idns.db");
-
-    let arc_conn = Arc::new(Connection::open(file_name, token)?);
+    let arc_conn = Arc::new(Connection::open(token)?);
 
     let token = crate::get_token();
     tracing::debug!("token测试{:?}", token);

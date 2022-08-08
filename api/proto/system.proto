@@ -48,6 +48,10 @@ message StringMessage{
     string data = 1;
 }
 
+message DatabaseQuery{
+    string sql = 1;
+    uint32 size = 2;
+}
 
 /////////////////////////////
 message WalletGetBalancesResponse{

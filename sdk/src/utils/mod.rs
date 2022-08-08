@@ -19,6 +19,18 @@ pub fn get_connection() -> Result<Arc<Connection>> {
     }
 }
 
+pub fn set_connection(conn: Arc<Connection>) -> Result<()> {
+    let mut w = crate::SYS_CONNECTION.write().unwrap();
+    *w = Some(conn);
+    Ok(())
+}
+
+pub fn clear_connection() -> Result<()> {
+    let mut w = crate::SYS_CONNECTION.write().unwrap();
+    *w = None;
+    Ok(())
+}
+
 pub fn get_Application_key() -> Result<String> {
     if let Some(str_value) = crate::APPLICATION_KEY.read().unwrap().as_ref() {
         return Ok(str_value.clone());
