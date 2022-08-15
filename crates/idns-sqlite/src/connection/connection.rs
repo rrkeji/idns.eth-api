@@ -4,7 +4,7 @@ use std::path::Path;
 use std::str;
 use std::sync::Arc;
 
-pub use rusqlite::{Error, OpenFlags, Params, Row, Statement};
+pub use rusqlite::{Error, OpenFlags, Params, Row, Statement, ToSql};
 
 use anyhow::{anyhow, Result};
 use idns_eth_core::account::IdnsToken;
@@ -144,5 +144,11 @@ impl Connection {
     #[inline]
     pub fn is_autocommit(&self) -> bool {
         self.raw_connection.is_autocommit()
+    }
+
+    pub fn execute_named(&self, sql: &str, params: &[(&str, &dyn ToSql)]) -> Result<usize> {
+        self.raw_connection
+            .execute_named(sql, params)
+            .map_err(|e| anyhow!("数据库执行失败:{:?}", e))
     }
 }

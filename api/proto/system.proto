@@ -53,6 +53,12 @@ message DatabaseQuery{
     uint32 size = 2;
 }
 
+message DatabaseUpdate{
+    string sql = 1;
+    string args_json = 2;
+}
+
+
 /////////////////////////////
 message WalletGetBalancesResponse{
     string address = 1;
