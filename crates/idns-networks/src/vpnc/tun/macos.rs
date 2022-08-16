@@ -7,8 +7,8 @@ use std::process::Command;
 use std::time::Duration;
 use tun::Device;
 
-use crate::tun::TunDevice;
-use crate::TunIpAddr;
+use crate::vpnc::tun::TunDevice;
+use crate::vpnc::TunIpAddr;
 
 const MAX_LENGTH: u8 = 32;
 

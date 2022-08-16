@@ -56,11 +56,11 @@ pub mod proto {
     use std::ops::Range;
     use std::str::FromStr;
 
-    use crate::common::HashMap;
+    use crate::vpnc::common::HashMap;
     use anyhow::anyhow;
     use serde::{Deserialize, Serialize};
 
-    use crate::common::persistence::ToJson;
+    use crate::vpnc::common::persistence::ToJson;
 
     const MAGIC_NUM: u8 = 0x99;
     const REGISTER: u8 = 0x00;
@@ -376,7 +376,7 @@ pub mod msg_operator {
     use tokio::io::{AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt};
     use tokio::net::UdpSocket;
 
-    use crate::common::cipher::Aes128Ctr;
+    use crate::vpnc::common::cipher::Aes128Ctr;
 
     use super::proto::{TcpMsg, UdpMsg};
 

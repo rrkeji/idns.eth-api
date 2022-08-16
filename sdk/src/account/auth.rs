@@ -166,10 +166,6 @@ impl AuthServiceImpl {
             let mut w = crate::PASSWORD.write().unwrap();
             *w = None;
         }
-        {
-            //TODO 数据库
-            crate::database::close_system_database()?;
-        }
         //
         Ok(true)
     }

@@ -20,7 +20,7 @@ async fn main() {
         .init();
     tracing::info!("测试.");
 
-    idns_eth_sdk::init_sdk(ALICE_PUBLIC_KEY).unwrap();
+    idns_eth_sdk::init_application(ALICE_PUBLIC_KEY).unwrap();
 
     let ten_millis = time::Duration::from_millis(1000000);
     thread::sleep(ten_millis);

@@ -19,9 +19,33 @@ impl StorageServiceImpl {
     }
 }
 
+fn _schema() -> Result<()> {
+    let conn = crate::get_connection()?;
+    conn.execute(
+        "
+    CREATE TABLE IF NOT EXISTS files(
+        id    INTEGER PRIMARY KEY,
+        category   TEXT DEFAULT '',
+        parent_id  INTEGER DEFAULT 0,
+        file_name  TEXT NOT NULL,
+        file_hash  TEXT NOT NULL,
+        file_size  INTEGER DEFAULT 0,
+        file_type  TEXT NOT NULL,
+        is_dir  INTEGER DEFAULT 0,
+        status  INTEGER DEFAULT 1,
+        _cid  TEXT DEFAULT '',
+        _cn INTEGER DEFAULT 0
+    );
+    ",
+        (),
+    )?;
+    Ok(())
+}
+
 impl StorageServiceImpl {
     ///创建目录
     pub fn mkdir(&self, parent_id: u64, file_name: &String) -> Result<bool> {
+        _schema()?;
         let file_entity = FileEntity {
             id: 0,
             parent_id: parent_id,
@@ -42,6 +66,7 @@ impl StorageServiceImpl {
         category: &String,
         limit: u32,
     ) -> Result<Vec<FileEntity>> {
+        _schema()?;
         //获取conn
         let arc_conn = crate::get_connection()?;
         let mut stmt = arc_conn.prepare(
@@ -69,6 +94,7 @@ impl StorageServiceImpl {
     }
 
     pub fn list_files(&self, root_id: u64) -> Result<Vec<FileEntity>> {
+        _schema()?;
         //获取conn
         let arc_conn = crate::get_connection()?;
         let mut stmt = arc_conn.prepare(
@@ -96,6 +122,7 @@ impl StorageServiceImpl {
     }
 
     pub fn list_deleted_files(&self) -> Result<Vec<FileEntity>> {
+        _schema()?;
         //获取conn
         let arc_conn = crate::get_connection()?;
         let mut stmt = arc_conn.prepare(
@@ -121,6 +148,7 @@ impl StorageServiceImpl {
     }
 
     pub fn delete_file(&self, file_id: u64) -> Result<bool> {
+        _schema()?;
         let arc_conn = crate::get_connection()?;
         arc_conn.execute(
             format!("UPDATE files SET status = 0 WHERE id = {}", file_id).as_str(),
@@ -130,6 +158,7 @@ impl StorageServiceImpl {
     }
 
     pub fn recovery_file(&self, file_id: u64) -> Result<bool> {
+        _schema()?;
         let arc_conn = crate::get_connection()?;
         arc_conn.execute(
             format!("UPDATE files SET status = 1 WHERE id = {}", file_id).as_str(),
@@ -139,19 +168,23 @@ impl StorageServiceImpl {
     }
 
     pub fn create_file(&self, file: &FileEntity) -> Result<u64> {
+        _schema()?;
         self._create_file(file)
     }
 
     pub fn update_file(&self, file: &FileEntity) -> Result<u64> {
+        _schema()?;
         self._update_file(file)
     }
 
     pub fn add_content(&self, bytes: &Vec<u8>) -> Result<String> {
+        _schema()?;
         //
         ipfs_add_content(bytes.clone()).map_err(|_e| Error::IpfsConnectFailed)
     }
 
     pub fn get_content(&self, cid: &String) -> Result<Vec<u8>> {
+        _schema()?;
         let handle = Handle::current();
         let cid_str = cid.clone();
         let handle_std = std::thread::spawn(move || {

@@ -1,7 +1,7 @@
 use std::io::{Error, Result};
 use std::sync::Arc;
 
-use crate::TunIpAddr;
+use crate::vpnc::TunIpAddr;
 
 #[cfg(target_os = "linux")]
 mod linux;

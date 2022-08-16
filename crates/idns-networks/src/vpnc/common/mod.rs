@@ -2,16 +2,7 @@ pub mod cipher;
 pub mod net;
 pub mod persistence;
 
-#[macro_export]
-macro_rules! ternary {
-    ($condition: expr, $_true: expr, $_false: expr) => {
-        if $condition {
-            $_true
-        } else {
-            $_false
-        }
-    };
-}
+
 
 pub type HashMap<K, V> = std::collections::HashMap<K, V, ahash::RandomState>;
 pub type HashSet<V> = std::collections::HashSet<V, ahash::RandomState>;

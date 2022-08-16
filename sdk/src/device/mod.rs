@@ -1,3 +1,5 @@
-mod device;
+mod device_node;
+mod device_service;
 
-pub use device::*;
+pub use device_node::*;
+pub use device_service::*;

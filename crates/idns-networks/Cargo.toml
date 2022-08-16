@@ -22,8 +22,13 @@ aes = "0.8"
 ctr = "0.9"
 md5 = "0.7"
 
+[target.'cfg(any(target_os = "linux", target_os = "windows", target_os = "macos"))'.dependencies]
+sys-info = "0.9"
+mac_address = "1.1"
+
 [target.'cfg(any(target_os = "linux", target_os = "macos"))'.dependencies]
 tun = "0.5"
+
 
 [target.'cfg(target_os = "windows")'.dependencies]
 networks-wintun = { git = "https://github.com/jinisu/networks-wintun.git" }

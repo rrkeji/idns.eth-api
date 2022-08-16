@@ -11,12 +11,12 @@
   "udp_handler_thread_count": 1,
   "network_ranges": [
     {
-      "server_addr": "49.232.102.140:48080",
+      "server_addr": "49.232.102.140:35093",
       "tun": {
         "ip": "10.0.0.2",
         "netmask": "255.255.255.0"
       },
-      "key": "runnerc",
+      "key": "a123",
       "mode": "UDP_AND_TCP",
       "lan_ip_addr": "10.1.68.40",
       "try_send_to_lan_addr": false
