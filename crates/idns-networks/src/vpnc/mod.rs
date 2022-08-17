@@ -12,6 +12,7 @@ use log4rs::Config;
 use mimalloc::MiMalloc;
 use serde::{de, Deserialize};
 
+use tokio::runtime::Handle;
 use tokio::runtime::Runtime;
 
 use crate::vpnc::client::Req;
@@ -189,6 +190,19 @@ pub fn cmd_launch() -> Result<()> {
     )?;
 
     block_on!(client::start(ClientConfigFinalize::try_from(config)?))
+}
+
+pub fn launch() -> Result<()> {
+    // logger_init();
+
+    let config: ClientConfig = load_config(
+        "/Users/suhs/jinisu/idns.eth-api/crates/idns-networks/examples/client-conf.json",
+    )?;
+    let handle = Handle::current();
+    std::thread::spawn(move || {
+        handle.block_on(async move { client::start(ClientConfigFinalize::try_from(config)?).await })
+    });
+    Ok(())
 }
 
 fn load_config<T: de::DeserializeOwned>(path: &str) -> Result<T> {

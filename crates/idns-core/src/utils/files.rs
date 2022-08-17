@@ -30,3 +30,11 @@ pub fn read_string_from_file(path: &str, filename: &str) -> Result<String> {
     buf_reader.read_to_string(&mut content)?;
     Ok(content)
 }
+
+pub fn file_exists(path: &str, filename: &str) -> Result<bool> {
+    //
+    let storage_path = crate::utils::idns_home_path()?.join(path);
+    std::fs::create_dir_all(storage_path.as_path())?;
+    let filename = storage_path.join(filename);
+    Ok(filename.as_path().exists())
+}

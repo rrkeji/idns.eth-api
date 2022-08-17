@@ -46,6 +46,70 @@ impl DeviceServiceImpl {
         Ok(res)
     }
 
+    pub fn find_by_uuid(&self, device_uuid: &String) -> Result<Option<DeviceEntity>> {
+        _schema()?;
+        //获取conn
+        let arc_conn = crate::get_connection()?;
+        let mut stmt = arc_conn.prepare(
+            "SELECT id, owner_id, device_uuid, name, device_type, os_type, mac_address, category,vpnc_address,icon_url FROM devices where device_uuid = ?1",
+        )?;
+        let mut res = Vec::<DeviceEntity>::new();
+
+        let _iter = stmt.query_map([device_uuid], |row| {
+            Ok(DeviceEntity {
+                id: row.get(0)?,
+                owner_id: row.get(1)?,
+                device_uuid: row.get(2)?,
+                name: row.get(3)?,
+                device_type: row.get(4)?,
+                os_type: row.get(5)?,
+                mac_address: row.get(6)?,
+                category: row.get(7)?,
+                vpnc_address: row.get(8)?,
+                icon_url: row.get(9)?,
+            })
+        })?;
+        for item in _iter {
+            res.push(item?);
+        }
+        if res.len() > 0 {
+            return Ok(res.pop());
+        }
+        Ok(None)
+    }
+
+    pub fn find_by_mac_address(&self, mac_address: &String) -> Result<Option<DeviceEntity>> {
+        _schema()?;
+        //获取conn
+        let arc_conn = crate::get_connection()?;
+        let mut stmt = arc_conn.prepare(
+            "SELECT id, owner_id, device_uuid, name, device_type, os_type, mac_address, category,vpnc_address,icon_url FROM devices where mac_address = ?1",
+        )?;
+        let mut res = Vec::<DeviceEntity>::new();
+
+        let _iter = stmt.query_map([mac_address], |row| {
+            Ok(DeviceEntity {
+                id: row.get(0)?,
+                owner_id: row.get(1)?,
+                device_uuid: row.get(2)?,
+                name: row.get(3)?,
+                device_type: row.get(4)?,
+                os_type: row.get(5)?,
+                mac_address: row.get(6)?,
+                category: row.get(7)?,
+                vpnc_address: row.get(8)?,
+                icon_url: row.get(9)?,
+            })
+        })?;
+        for item in _iter {
+            res.push(item?);
+        }
+        if res.len() > 0 {
+            return Ok(res.pop());
+        }
+        Ok(None)
+    }
+
     pub fn list_deleted_devices(&self) -> Result<Vec<DeviceEntity>> {
         _schema()?;
         //获取conn
@@ -71,6 +135,10 @@ impl DeviceServiceImpl {
             Ok(1)
         })?;
         Ok(res)
+    }
+
+    pub fn current_device_id(&self) -> Result<String> {
+        Ok(super::get_device_node_id()?)
     }
 
     pub fn delete_device(&self, device_id: u64) -> Result<bool> {
@@ -168,6 +236,9 @@ impl Handler for DeviceServiceImpl {
                     self.recovery_device(request.data)
                         .map(|r| BoolMessage { data: r }),
                 );
+            } else if method_name == "current_device_id" {
+                //
+                return response(self.current_device_id().map(|r| StringMessage { data: r }));
             } else if method_name == "update_device" {
                 //
                 let request = DeviceEntity::decode(Bytes::from(message))?;
@@ -196,7 +267,9 @@ fn _schema() -> Result<()> {
         icon_url     TEXT DEFAULT '',
         status  INTEGER DEFAULT 1,
         _cid  TEXT DEFAULT '',
-        _cn INTEGER DEFAULT 0
+        _cn INTEGER DEFAULT 0,
+        unique(device_uuid),
+        unique(mac_address)
     );
     ",
         (),

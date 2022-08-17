@@ -1,5 +1,6 @@
 use crate::account::{AccountServiceImpl, AuthServiceImpl};
 use crate::database::DatabaseServiceImpl;
+use crate::device::DeviceServiceImpl;
 use crate::storage::StorageServiceImpl;
 
 use bytes::Bytes;
@@ -32,6 +33,8 @@ pub fn execute(request: Command) -> Result<CommandResponse> {
             return AuthServiceImpl::new().execute(request);
         } else if service_name.starts_with("idns.system.storage") {
             return StorageServiceImpl::new().execute(request);
+        } else if service_name.starts_with("idns.system.device") {
+            return DeviceServiceImpl::new().execute(request);
         } else if service_name.starts_with("idns.system.database") {
             return DatabaseServiceImpl::new().execute(request);
         }
