@@ -5,8 +5,8 @@ use std::time::Duration;
 use networks_wintun::adapter::{WintunAdapter, WintunStream};
 use networks_wintun::ReadResult;
 
-use crate::tun::TunDevice;
-use crate::TunIpAddr;
+use crate::vpnc::tun::TunDevice;
+use crate::vpnc::TunIpAddr;
 
 const ADAPTER_NAME: &str = "Wintun";
 const TUNNEL_TYPE: &str = "proxy";

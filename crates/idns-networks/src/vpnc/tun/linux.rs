@@ -5,8 +5,8 @@ use std::io::{Read, Write};
 use std::process::Command;
 use tun::Device;
 
-use crate::tun::TunDevice;
-use crate::TunIpAddr;
+use crate::vpnc::tun::TunDevice;
+use crate::vpnc::TunIpAddr;
 
 pub struct Linuxtun {
     fd: UnsafeCell<tun::platform::Device>,
