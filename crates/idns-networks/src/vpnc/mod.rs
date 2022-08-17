@@ -182,22 +182,45 @@ macro_rules! block_on {
     }};
 }
 
-pub fn cmd_launch() -> Result<()> {
-    logger_init().unwrap();
+// pub fn cmd_launch() -> Result<()> {
+//     logger_init().unwrap();
 
-    let config: ClientConfig = load_config(
-        "/Users/suhs/jinisu/idns.eth-api/crates/idns-networks/examples/client-conf.json",
-    )?;
+//     let config: ClientConfig = load_config(
+//         "/Users/suhs/jinisu/idns.eth-api/crates/idns-networks/examples/client-conf.json",
+//     )?;
 
-    block_on!(client::start(ClientConfigFinalize::try_from(config)?))
-}
+//     block_on!(client::start(ClientConfigFinalize::try_from(config)?))
+// }
 
 pub fn launch() -> Result<()> {
     // logger_init();
 
-    let config: ClientConfig = load_config(
-        "/Users/suhs/jinisu/idns.eth-api/crates/idns-networks/examples/client-conf.json",
-    )?;
+    // let config: ClientConfig = load_config(
+    //     "/Users/suhs/jinisu/idns.eth-api/crates/idns-networks/examples/client-conf.json",
+    // )?;
+    let config: ClientConfig = ClientConfig {
+        mtu: Some(1462usize),
+        channel_limit: Some(100usize),
+        api_addr: None,
+        tcp_heartbeat_interval_secs: Some(5u64),
+        udp_heartbeat_interval_secs: Some(5u64),
+        reconnect_interval_secs: Some(3u64),
+        udp_socket_recv_buffer_size: Some(8196usize),
+        udp_socket_send_buffer_size: Some(8196usize),
+        tun_handler_thread_count: Some(1usize),
+        udp_handler_thread_count: Some(1usize),
+        network_ranges: vec![NetworkRange {
+            server_addr: String::from("49.232.102.140:35093"),
+            tun: TunIpAddr {
+                ip: "10.0.0.2".parse()?,
+                netmask: "255.255.255.0".parse()?,
+            },
+            key: String::from("a123"),
+            mode: Some(String::from("UDP_AND_TCP")),
+            lan_ip_addr: None,
+            try_send_to_lan_addr: Some(false),
+        }],
+    };
     let handle = Handle::current();
     std::thread::spawn(move || {
         handle.block_on(async move { client::start(ClientConfigFinalize::try_from(config)?).await })
