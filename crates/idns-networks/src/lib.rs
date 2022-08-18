@@ -5,4 +5,5 @@ extern crate log;
 extern crate sys_info;
 
 pub mod device;
+pub(crate) mod utils;
 pub mod vpnc;

@@ -15,15 +15,26 @@ struct DeviceJson {
 }
 
 pub fn init_device_node() -> Result<()> {
-    //获取设备的信息
-    let device_info = get_device_info()?;
+    let tun_mask = String::from("255.255.255.0");
+    // let token = crate::get_token()?;
+    // let key = String::from(&token.public_key[token.public_key.len() - 20..]);
+    let server = String::from("49.232.102.140:35093");
+    let key = String::from("a123");
 
-    let device_info = &device_info;
     //获取设备的ID
     let device_id = get_device_node_id()?;
     let device_service = DeviceServiceImpl::new();
     //查询该设备是否存在
     if let Some(device_entity) = device_service.find_by_uuid(&device_id)? {
+        //获取设备的信息
+        let device_info = get_device_info(
+            &device_entity.vpnc_address.clone(),
+            &tun_mask,
+            &server,
+            &key,
+        )?;
+        let device_info = &device_info;
+
         //存在,通过device_id插入更新
         device_service.update_device(&DeviceEntity {
             id: device_entity.id,
@@ -48,8 +59,16 @@ pub fn init_device_node() -> Result<()> {
                 .as_ref()
                 .map_or(String::new(), |r| r.clone()),
             icon_url: device_entity.icon_url,
-        });
+            hostname: device_info
+                .hostname
+                .as_ref()
+                .map_or(String::new(), |r| r.clone()),
+            home: format!("{:?}", crate::idns_core::idns_home_path()?),
+        })?;
     } else {
+        let device_info = get_device_info(&get_tun_ip()?, &tun_mask, &server, &key)?;
+        let device_info = &device_info;
+
         let mac_address = device_info
             .mac
             .as_ref()
@@ -81,8 +100,15 @@ pub fn init_device_node() -> Result<()> {
                     .as_ref()
                     .map_or(String::new(), |r| r.clone()),
                 icon_url: device_entity.icon_url,
-            });
+                hostname: device_info
+                    .hostname
+                    .as_ref()
+                    .map_or(String::new(), |r| r.clone()),
+                home: format!("{:?}", crate::idns_core::idns_home_path()?),
+            })?;
         } else {
+            let device_info = get_device_info(&get_tun_ip()?, &tun_mask, &server, &key)?;
+            let device_info = &device_info;
             //插入
             device_service.create_device(&DeviceEntity {
                 id: 0,
@@ -110,11 +136,21 @@ pub fn init_device_node() -> Result<()> {
                     .as_ref()
                     .map_or(String::new(), |r| r.clone()),
                 icon_url: String::new(),
-            });
+                hostname: device_info
+                    .hostname
+                    .as_ref()
+                    .map_or(String::new(), |r| r.clone()),
+                home: format!("{:?}", crate::idns_core::idns_home_path()?),
+            })?;
         }
     }
 
     Ok(())
+}
+
+pub fn get_tun_ip() -> Result<String> {
+    //TODO 查询出所有的tun_ip, 循环
+    Ok(String::from("10.0.0.9"))
 }
 
 pub fn get_device_node_id() -> Result<String> {

@@ -67,6 +67,7 @@ fn get_direct_node_list() -> &'static DirectNodeList {
 }
 
 struct InterfaceInfo<Map> {
+    tun: TunIpAddr,
     node_map: Map,
     server_addr: String,
     tcp_handler_channel: Option<Sender<(Box<[u8]>, NodeId)>>,
@@ -87,6 +88,7 @@ impl InterfaceMap {
             .into_iter()
             .map(|(tun_addr, info)| {
                 let network_segment = InterfaceInfo {
+                    tun: info.tun,
                     server_addr: info.server_addr,
                     node_map: RwLock::new(Arc::new(HashMap::new())),
                     tcp_handler_channel: info.tcp_handler_channel,
@@ -122,6 +124,7 @@ impl InterfaceMap {
 
         for (k, node_map) in &self.map {
             let range = InterfaceInfo {
+                tun: node_map.tun.clone(),
                 server_addr: node_map.server_addr.clone(),
                 node_map: node_map.node_map.try_read()?.clone(),
                 tcp_handler_channel: node_map.tcp_handler_channel.clone(),
@@ -139,6 +142,7 @@ impl InterfaceMap {
 
         for (k, node_map) in &self.map {
             let range = InterfaceInfo {
+                tun: node_map.tun.clone(),
                 server_addr: node_map.server_addr.clone(),
                 node_map: node_map.node_map.read().clone(),
                 tcp_handler_channel: node_map.tcp_handler_channel.clone(),
@@ -307,6 +311,8 @@ fn tun_handler<T: TunDevice>(tun: &T) -> Result<()> {
             None => continue,
         };
 
+        let direct_node_list: &HashSet<NodeId> = get_local_direct_node_list!();
+
         macro_rules! send {
             ($local_node: expr, $dst_node: expr) => {
                 if $local_node.mode.udp_support() && $dst_node.mode.udp_support() {
@@ -317,8 +323,7 @@ fn tun_handler<T: TunDevice>(tun: &T) -> Result<()> {
                         ..
                     } = $dst_node
                     {
-                        let direct_node_list: &HashSet<NodeId> = get_local_direct_node_list!();
-
+                        // TODO There will be different port with the same id
                         if direct_node_list.contains(node_id) {
                             let peer_addr = if interface_info.try_send_to_lan_addr {
                                 match $local_node.wan_udp_addr {
@@ -373,7 +378,15 @@ fn tun_handler<T: TunDevice>(tun: &T) -> Result<()> {
             None => continue,
         };
 
-        if dst_addr.is_broadcast() {
+        fn is_broadcast(dst: Ipv4Addr, prefix_len: u32) -> bool {
+            dst.is_broadcast()
+                || Ipv4Addr::from(u32::from(dst) | u32::MAX.checked_shr(prefix_len).unwrap_or(0))
+                    == dst
+        }
+
+        if let Some(dst_node) = interface_info.node_map.get(&dst_addr) {
+            send!(local_node, dst_node);
+        } else if is_broadcast(dst_addr, u32::from(interface_info.tun.netmask).count_ones()) {
             for dst_node in interface_info.node_map.values() {
                 if dst_node.id == get_local_node_id() {
                     continue;
@@ -381,13 +394,6 @@ fn tun_handler<T: TunDevice>(tun: &T) -> Result<()> {
 
                 send!(local_node, dst_node);
             }
-        } else {
-            let dst_node = match interface_info.node_map.get(&dst_addr) {
-                Some(v) => v,
-                None => continue,
-            };
-
-            send!(local_node, dst_node);
         }
     }
 }
@@ -846,6 +852,7 @@ pub(super) async fn start(config: ClientConfigFinalize) -> Result<()> {
         tcp_handler_initialize.insert(range.tun.ip, (rx, init_node));
 
         let info = InterfaceInfo {
+            tun: range.tun.clone(),
             node_map: (),
             server_addr: range.server_addr.clone(),
             tcp_handler_channel: tx,

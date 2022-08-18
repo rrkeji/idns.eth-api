@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package idns.wasmer;
+
+message TaskEntity{
+    uint64 id = 1;
+    string owner_id = 2;
+    string wasm_cid = 3;
+    string name = 4;
+    string icon_url = 5;
+    uint64 gas = 6;
+    string trade_no = 7;
+    string target_device = 8;
+    string target_os_type = 9;
+    string category = 10;
+}
+
+message ListTasksResponse{
+    repeated TaskEntity tasks = 1;
+}

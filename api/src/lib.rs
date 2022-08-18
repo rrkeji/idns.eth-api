@@ -14,8 +14,8 @@ pub mod idns {
         include!(concat!(env!("OUT_DIR"), "/idns.account.rs"));
     }
     //
-    pub mod service {
-        include!(concat!(env!("OUT_DIR"), "/idns.service.rs"));
+    pub mod wasmer {
+        include!(concat!(env!("OUT_DIR"), "/idns.wasmer.rs"));
     }
     //
     pub mod storage {
@@ -24,9 +24,5 @@ pub mod idns {
     //
     pub mod system {
         include!(concat!(env!("OUT_DIR"), "/idns.system.rs"));
-    }
-    //
-    pub mod worker {
-        include!(concat!(env!("OUT_DIR"), "/idns.worker.rs"));
     }
 }

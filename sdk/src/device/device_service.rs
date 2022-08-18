@@ -38,6 +38,8 @@ impl DeviceServiceImpl {
                 category: row.get(7)?,
                 vpnc_address: row.get(8)?,
                 icon_url: row.get(9)?,
+                hostname: String::new(),
+                home: format!("{:?}", crate::idns_core::idns_home_path().map_err(|r| r)),
             })
         })?;
         for item in _iter {
@@ -67,6 +69,8 @@ impl DeviceServiceImpl {
                 category: row.get(7)?,
                 vpnc_address: row.get(8)?,
                 icon_url: row.get(9)?,
+                hostname: String::new(),
+                home: format!("{:?}", crate::idns_core::idns_home_path().map_err(|r| r)),
             })
         })?;
         for item in _iter {
@@ -99,6 +103,8 @@ impl DeviceServiceImpl {
                 category: row.get(7)?,
                 vpnc_address: row.get(8)?,
                 icon_url: row.get(9)?,
+                hostname: String::new(),
+                home: format!("{:?}", crate::idns_core::idns_home_path().map_err(|r| r)),
             })
         })?;
         for item in _iter {
@@ -131,6 +137,8 @@ impl DeviceServiceImpl {
                 category: row.get(7)?,
                 vpnc_address: row.get(8)?,
                 icon_url: row.get(9)?,
+                hostname: String::new(),
+                home: format!("{:?}", crate::idns_core::idns_home_path().map_err(|r| r)),
             });
             Ok(1)
         })?;
@@ -215,6 +223,19 @@ impl Handler for DeviceServiceImpl {
                     self.list_deleted_devices()
                         .map(|r| ListDevicesResponse { devices: r }),
                 );
+            } else if method_name == "find_by_uuid" {
+                //
+                let device_uuid = StringMessage::decode(Bytes::from(message))?;
+                //
+                let res = self.find_by_uuid(&device_uuid.data);
+                match res {
+                    Ok(Some(entity)) => {
+                        return response(Ok(entity));
+                    }
+                    _ => {
+                        return Err(Error::NormalError(-1, String::from("")));
+                    }
+                }
             } else if method_name == "create_device" {
                 //
                 let request = DeviceEntity::decode(Bytes::from(message))?;

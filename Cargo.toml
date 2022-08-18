@@ -5,4 +5,5 @@ members = [
     "crates/idns-core",
     "crates/idns-sqlite",
     "crates/idns-networks",
+    "crates/idns-wasmer",
 ]

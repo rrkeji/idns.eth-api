@@ -182,22 +182,9 @@ macro_rules! block_on {
     }};
 }
 
-// pub fn cmd_launch() -> Result<()> {
-//     logger_init().unwrap();
+pub fn launch(server: &String, tun_ip: &String, tun_mask: &String, key: &String) -> Result<()> {
+    let local_ip = crate::utils::get_local_ip()?;
 
-//     let config: ClientConfig = load_config(
-//         "/Users/suhs/jinisu/idns.eth-api/crates/idns-networks/examples/client-conf.json",
-//     )?;
-
-//     block_on!(client::start(ClientConfigFinalize::try_from(config)?))
-// }
-
-pub fn launch() -> Result<()> {
-    // logger_init();
-
-    // let config: ClientConfig = load_config(
-    //     "/Users/suhs/jinisu/idns.eth-api/crates/idns-networks/examples/client-conf.json",
-    // )?;
     let config: ClientConfig = ClientConfig {
         mtu: Some(1462usize),
         channel_limit: Some(100usize),
@@ -210,14 +197,14 @@ pub fn launch() -> Result<()> {
         tun_handler_thread_count: Some(1usize),
         udp_handler_thread_count: Some(1usize),
         network_ranges: vec![NetworkRange {
-            server_addr: String::from("49.232.102.140:35093"),
+            server_addr: server.clone(),
             tun: TunIpAddr {
-                ip: "10.0.0.2".parse()?,
-                netmask: "255.255.255.0".parse()?,
+                ip: tun_ip.parse()?,
+                netmask: tun_mask.parse()?,
             },
-            key: String::from("a123"),
+            key: key.clone(),
             mode: Some(String::from("UDP_AND_TCP")),
-            lan_ip_addr: None,
+            lan_ip_addr: Some(IpAddr::V4(local_ip.parse()?)),
             try_send_to_lan_addr: Some(false),
         }],
     };
