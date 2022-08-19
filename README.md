@@ -10,3 +10,8 @@ TODO
 ### install protoc
 
 ### libsqlite3-dev
+
+
+## macos
+
+libsodium.a

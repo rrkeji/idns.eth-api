@@ -80,7 +80,7 @@ impl TaskServiceImpl {
         Ok(true)
     }
 
-    pub fn recovery_device(&self, task_id: u64) -> Result<bool> {
+    pub fn recovery_task(&self, task_id: u64) -> Result<bool> {
         let arc_conn = self.connection.clone();
         _schema(&arc_conn)?;
         arc_conn.execute(
@@ -90,19 +90,19 @@ impl TaskServiceImpl {
         Ok(true)
     }
 
-    pub fn create_device(&self, task: &TaskEntity) -> Result<u64> {
+    pub fn create_task(&self, task: &TaskEntity) -> Result<u64> {
         let arc_conn = self.connection.clone();
         _schema(&arc_conn)?;
-        self._create_device(task)
+        self._create_task(task)
     }
 
-    pub fn update_device(&self, task: &TaskEntity) -> Result<u64> {
+    pub fn update_task(&self, task: &TaskEntity) -> Result<u64> {
         let arc_conn = self.connection.clone();
         _schema(&arc_conn)?;
-        self._update_device(task)
+        self._update_task(task)
     }
 
-    fn _create_device(&self, task: &TaskEntity) -> Result<u64> {
+    fn _create_task(&self, task: &TaskEntity) -> Result<u64> {
         let arc_conn = self.connection.clone();
 
         arc_conn.execute(
@@ -112,10 +112,10 @@ impl TaskServiceImpl {
         Ok(1)
     }
 
-    fn _update_device(&self, task: &TaskEntity) -> Result<u64> {
+    fn _update_task(&self, task: &TaskEntity) -> Result<u64> {
         //
         if task.id <= 0 {
-            return self._create_device(task);
+            return self._create_task(task);
         }
         let arc_conn = self.connection.clone();
 
