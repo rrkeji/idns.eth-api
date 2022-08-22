@@ -9,7 +9,7 @@ use std::{thread, time};
 use idns_eth_api::{response, Command, CommandResponse, EmptyMessage, Error, Handler, Result};
 use idns_eth_core::account::{ALICE_PHRASE, ALICE_PUBLIC_KEY};
 // [0, "chest shaft youth voice large vast idle mosquito train vacant license pole", "0x2e15c089cd236ac8f63efa16d910ca7bbf045e6d01d45431159745bd23977c15"]
-use idns_eth_sdk::{execute, init_account};
+use idns_eth_sdk::{execute, init_node};
 
 use idns_eth_api::idns::storage::{FileEntity, ListFilesRequest, ListFilesResponse};
 
@@ -58,7 +58,7 @@ async fn main() {
                 );
                 //获取文件列表
                 println!("=======11111");
-                init_account();
+                // init_node(res);
                 println!("=======");
                 // list_files();
             } else {

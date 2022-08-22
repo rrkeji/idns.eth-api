@@ -18,10 +18,6 @@ message GenerateAccountResponse{
     string public_key = 3;
 }
 
-message GetAccountByIdRequest{
-    string account_id = 1;
-}
-
 message EncryptMessageRequest{
     string plain = 1;
     string password = 5;

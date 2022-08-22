@@ -34,7 +34,7 @@ impl Worker {
                         if let Err(err) = crate::sync::DataBaseSync::data_sync(&token_inner).await {
                             tracing::error!("err:{}", err);
                         }
-                        thread::sleep(Duration::from_millis(10000));
+                        thread::sleep(Duration::from_millis(1000000));
                     }
                 });
             })

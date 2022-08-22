@@ -1,10 +1,16 @@
-use crate::idns_home_path;
 use actix_files as fs;
 use actix_web::{get, http::header, web, App, HttpServer, Responder};
 use anyhow::{anyhow, Result};
+use idns_eth_core::idns_home_path;
 use tokio::runtime::Handle;
 
 pub struct Server {}
+
+impl Server {
+    pub fn new() -> Self {
+        Self {}
+    }
+}
 
 impl Server {
     ///获取url的根路径
@@ -19,7 +25,7 @@ impl Server {
     }
 
     ///启动服务
-    pub fn start() -> Result<()> {
+    pub fn start(&self) -> Result<()> {
         tokio::spawn(
             HttpServer::new(|| {
                 //静态文件路径

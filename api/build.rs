@@ -9,6 +9,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         &[
             "proto/networks.proto",
             "proto/account.proto",
+            "proto/identity.proto",
             "proto/wasmer.proto",
             "proto/storage.proto",
             "proto/system.proto",

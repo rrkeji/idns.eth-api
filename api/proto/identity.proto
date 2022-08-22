@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package idns.identity;
+
+message IdentityEntity{
+    string identity = 1;
+    string public_key = 2;
+    string name = 3;
+    string avatar = 4;
+    string identity_type = 5;
+    string description = 6;
+    string cid = 7;
+    string ciphertext = 8;
+    string salt = 9;
+    string nonce = 10;
+    uint64 create_at = 11;
+}
+
+ 
+message ListIdentitiesResponse{
+    repeated IdentityEntity identities = 1;
+}

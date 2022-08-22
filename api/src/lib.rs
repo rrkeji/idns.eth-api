@@ -14,6 +14,10 @@ pub mod idns {
         include!(concat!(env!("OUT_DIR"), "/idns.account.rs"));
     }
     //
+    pub mod identity {
+        include!(concat!(env!("OUT_DIR"), "/idns.identity.rs"));
+    }
+    //
     pub mod wasmer {
         include!(concat!(env!("OUT_DIR"), "/idns.wasmer.rs"));
     }

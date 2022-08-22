@@ -3,6 +3,7 @@ pub mod registe_center;
 mod account;
 mod database;
 mod device;
+mod identity;
 mod storage;
 mod wasmer;
 
@@ -13,6 +14,7 @@ use std::collections::HashMap;
 use account::{AccountServiceImpl, AuthServiceImpl};
 use database::DatabaseServiceImpl;
 use device::DeviceServiceImpl;
+use identity::IdentityServiceImpl;
 use storage::StorageServiceImpl;
 use wasmer::SdkTaskServiceImpl;
 
@@ -46,6 +48,8 @@ pub async fn async_execute(request: Command) -> Result<CommandResponse> {
             return AccountServiceImpl::new().execute(request).await;
         } else if service_name.starts_with("idns.system.auth") {
             return AuthServiceImpl::new().execute(request).await;
+        } else if service_name.starts_with("idns.system.identity") {
+            return IdentityServiceImpl::new().execute(request).await;
         } else if service_name.starts_with("idns.system.storage") {
             return StorageServiceImpl::new().execute(request).await;
         } else if service_name.starts_with("idns.system.device") {
@@ -56,12 +60,5 @@ pub async fn async_execute(request: Command) -> Result<CommandResponse> {
             return SdkTaskServiceImpl::new().execute(request).await;
         }
     }
-
-    //
-    Ok(CommandResponse {
-        headers: HashMap::<String, String>::new(),
-        status: 3,
-        data: vec![],
-        nonce: String::new(),
-    })
+    Err(Error::NotFoundService)
 }

@@ -1,6 +1,7 @@
 #[macro_use]
 extern crate lazy_static;
 
+pub(crate) mod http;
 pub(crate) mod node;
 pub(crate) mod rpc;
 pub(crate) mod services;
@@ -67,14 +68,14 @@ pub fn init_node(token: &IdnsToken) -> Result<()> {
     //启动注册wasmer服务
 
     //启动设备服务
+    //启动HTTP文件服务
+    tracing::debug!("启动HTTP文件服务");
+    http::Server::new().start()?;
 
-    let handle = Handle::current();
-    let _ = std::thread::spawn(move || {
-        handle.block_on(async move {
-            //启动核心应用服务
-            tracing::debug!("启动核心应用服务");
-            // crate::rpc::server_start().await;
-        })
+    //启动核心应用服务
+    tracing::debug!("启动核心应用服务");
+    tokio::spawn(async move {
+        let _ = crate::rpc::server_start().await;
     });
 
     Ok(())
@@ -99,6 +100,9 @@ pub async fn init_node_async(token: &IdnsToken) -> Result<()> {
 
     //启动设备服务
 
+    //启动HTTP文件服务
+    tracing::debug!("启动HTTP文件服务");
+    http::Server::new().start()?;
     //启动核心应用服务
     tracing::debug!("启动核心应用服务");
     crate::rpc::server_start()

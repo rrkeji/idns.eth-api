@@ -2,7 +2,7 @@ use anyhow::Result;
 use idns_eth_api::idns::account::{
     Account, EncryptMessageRequest, LoginRequest, LoginResponse as R,
 };
-use idns_eth_api::idns::system::{Command, CommandResponse};
+use idns_eth_api::idns::system::{Command, CommandResponse, StringMessage};
 use idns_eth_core::account::{login, ALICE_PHRASE, ALICE_PUBLIC_KEY};
 use idns_eth_node::async_request;
 use prost::Message;
@@ -28,11 +28,14 @@ async fn main() -> Result<()> {
         password: String::from("123"),
         phrase: String::from(ALICE_PHRASE),
     };
+    let data = StringMessage {
+        data: String::from("b68a805c4064be1d49529abd0147fc2f08962c0594f0827d8b48b8864abd0625"),
+    };
 
     //request
     let command = Command {
-        service_name: String::from("idns.system.auth"),
-        method_name: String::from("import_and_login"),
+        service_name: String::from("idns.system.identity.identity"),
+        method_name: String::from("list_identities"),
         headers: HashMap::<String, String>::new(),
         data: data.encode_to_vec(),
         nonce: String::new(),
