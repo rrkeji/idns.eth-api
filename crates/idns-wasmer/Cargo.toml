@@ -17,10 +17,8 @@ prost-types = "0.11"
 wasmer = "2.3"
 wasmer-wasi = '2.3'
 
-##
-magnum-opus = { git = "https://github.com/open-trade/magnum-opus" }
-
 #IDNS.ETH
 idns-eth-core = { path = "../idns-core", version = "*" }
 idns-eth-sqlite = { path = "../idns-sqlite", version = "*" }
 idns-eth-api = { path = "../../api", version = "*" }
+idns-eth-networks = { path = "../idns-networks", version = "*" }

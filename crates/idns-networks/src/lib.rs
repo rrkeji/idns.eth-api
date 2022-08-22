@@ -1,10 +1,12 @@
 #[macro_use]
 extern crate log;
 
-#[cfg(any(target_os = "linux", target_os = "windows", target_os = "macos"))]
-extern crate sys_info;
-
-pub mod device;
-// pub mod rpc;
 pub(crate) mod utils;
 pub mod vpnc;
+
+use anyhow::Result;
+
+pub fn launch() -> Result<()> {
+    // let _ = crate::vpnc::launch(server, tun_ip, tun_mask, key)?;
+    Ok(())
+}

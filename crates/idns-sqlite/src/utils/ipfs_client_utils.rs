@@ -13,7 +13,30 @@ pub fn get_ipfs_client() -> Result<IpfsClient> {
 }
 
 /// 存储值，并返回内容ID
-pub fn ipfs_add_content(value: Vec<u8>) -> Result<String> {
+pub async fn ipfs_add_content(value: Vec<u8>) -> Result<String> {
+    //
+    //保存到到IPFS
+    let data = Cursor::new(value);
+    match get_ipfs_client() {
+        Ok(client) => {
+            let res_result = client.add(data).await;
+            match res_result {
+                Ok(res) => {
+                    tracing::debug!("保存IPFS成功:{:#?}", res);
+                    Ok(res.hash)
+                }
+                Err(e) => {
+                    tracing::error!("保存到IPFS失败:{:#?}", e);
+                    Err(anyhow!(""))
+                }
+            }
+        }
+        _ => Err(anyhow!("")),
+    }
+}
+
+/// 存储值，并返回内容ID
+pub fn _ipfs_add_content(value: Vec<u8>) -> Result<String> {
     //
     //保存到到IPFS
     let data = Cursor::new(value);

@@ -4,6 +4,8 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+tracing-subscriber = { version = "0.3", features = ["fmt"] }
+tracing = "0.1.15"
 tokio = { version = "1", features = ["full"] }
 log4rs = "1"
 log = "0.4"
@@ -24,17 +26,13 @@ md5 = "0.7"
 cfg-if = "1.0"
 
 [target.'cfg(any(target_os = "linux", target_os = "windows", target_os = "macos"))'.dependencies]
-sys-info = "0.9"
-mac_address = "1.1"
 local-ip-address = "0.4"
 
 [target.'cfg(any(target_os = "linux", target_os = "macos"))'.dependencies]
 tun = "0.5"
 
-
 [target.'cfg(target_os = "windows")'.dependencies]
 networks-wintun = { git = "https://github.com/jinisu/networks-wintun.git" }
-
 
 [profile.release]
 lto = true

@@ -25,3 +25,6 @@ pub enum Error {
     #[error(transparent)]
     Other(#[from] anyhow::Error),
 }
+
+unsafe impl Send for Error {}
+unsafe impl Sync for Error {}

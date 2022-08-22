@@ -1,0 +1,43 @@
+[package]
+name = "idns-eth-node"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1"
+tracing-subscriber = { version = "0.3", features = ["fmt"] }
+tracing = "0.1.15"
+lazy_static = "1.4"
+tokio = { version = "1", features = ["full"] }
+bytes = "1.1.0"
+async-trait = "0.1"
+
+#GRPC
+tonic = "0.8"
+tonic-web = "0.4"
+tonic-reflection = "0.5"
+prost = "0.11"
+prost-types = "0.11"
+futures = "0.3.15"
+async-stream = "0.3.2"
+tokio-stream = { version = "0.1.6", features = ["default", "sync"] }
+
+#JSON
+serde_json = "1.0"
+serde = { version = "1.0", features = ["derive"] }
+
+
+#IDNS.ETH
+idns-eth-core = { path = "../idns-core", version = "*" }
+idns-eth-sqlite = { path = "../idns-sqlite", version = "*" }
+idns-eth-api = { path = "../../api", version = "*" }
+idns-eth-networks = { path = "../idns-networks", version = "*" }
+idns-eth-wasmer = { path = "../idns-wasmer", version = "*" }
+
+[target.'cfg(any(target_os = "linux", target_os = "windows", target_os = "macos"))'.dependencies]
+sys-info = "0.9"
+mac_address = "1.1"
+local-ip-address = "0.4"
+
+[build-dependencies]
+tonic-build = "0.8"

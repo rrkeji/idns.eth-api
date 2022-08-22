@@ -31,8 +31,9 @@ impl DatabaseServiceImpl {
     }
 }
 
+#[async_trait::async_trait]
 impl Handler for DatabaseServiceImpl {
-    fn execute(&self, request: Command) -> Result<CommandResponse> {
+    async fn execute(&self, request: Command) -> Result<CommandResponse> {
         let service_name = request.service_name;
         let method_name = request.method_name;
         let message = request.data;

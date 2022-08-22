@@ -177,23 +177,18 @@ impl StorageServiceImpl {
         self._update_file(file)
     }
 
-    pub fn add_content(&self, bytes: &Vec<u8>) -> Result<String> {
+    pub async fn add_content(&self, bytes: &Vec<u8>) -> Result<String> {
         _schema()?;
         //
-        ipfs_add_content(bytes.clone()).map_err(|_e| Error::IpfsConnectFailed)
+        let res = ipfs_add_content(bytes.clone()).await;
+        res.map_err(|_e| Error::IpfsConnectFailed)
     }
 
-    pub fn get_content(&self, cid: &String) -> Result<Vec<u8>> {
+    pub async fn get_content(&self, cid: &String) -> Result<Vec<u8>> {
         _schema()?;
-        let handle = Handle::current();
-        let cid_str = cid.clone();
-        let handle_std = std::thread::spawn(move || {
-            handle.block_on(async move { ipfs_get_content(&cid_str).await })
-        });
-        match handle_std.join() {
-            Ok(res) => Ok(res?),
-            Err(_err) => Err(Error::IpfsConnectFailed),
-        }
+        ipfs_get_content(cid)
+            .await
+            .map_err(|_e| Error::IpfsConnectFailed)
     }
 
     fn _create_file(&self, file: &FileEntity) -> Result<u64> {
@@ -222,8 +217,9 @@ impl StorageServiceImpl {
     }
 }
 
+#[async_trait::async_trait]
 impl Handler for StorageServiceImpl {
-    fn execute(&self, request: Command) -> Result<CommandResponse> {
+    async fn execute(&self, request: Command) -> Result<CommandResponse> {
         let service_name = request.service_name;
         let method_name = request.method_name;
         let message = request.data;
@@ -290,17 +286,15 @@ impl Handler for StorageServiceImpl {
             } else if method_name == "add_content" {
                 //
                 let request = BytesMessage::decode(Bytes::from(message))?;
-
-                return response(
-                    self.add_content(&request.data)
-                        .map(|r| StringMessage { data: r }),
-                );
+                let res = self.add_content(&request.data).await;
+                return response(res.map(|r| StringMessage { data: r }));
             } else if method_name == "get_content" {
                 //
                 let request = StringMessage::decode(Bytes::from(message))?;
 
                 return response(
                     self.get_content(&request.data)
+                        .await
                         .map(|r| BytesMessage { data: r }),
                 );
             }

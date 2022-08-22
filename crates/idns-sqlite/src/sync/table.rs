@@ -71,7 +71,7 @@ impl TableSync {
                 max_size: batch_size as i32,
                 rows: cids,
             };
-            let cid = crate::utils::ipfs_add_content(table.encode_to_vec())?;
+            let cid = crate::utils::ipfs_add_content(table.encode_to_vec()).await?;
             tracing::debug!("同步表:{} Cid:{}", table_schema.table_name, cid);
 
             Ok(Some(cid))
@@ -122,7 +122,7 @@ impl TableSync {
         //
         let v = RowsArray { rows: cids };
 
-        let cid = crate::utils::ipfs_add_content(v.encode_to_vec())?;
+        let cid = crate::utils::ipfs_add_content(v.encode_to_vec()).await?;
 
         //INSERT INTO idns_rows_version(table_name, offset, size, cid) VALUES (?1, ?2, ?3, ?4) ON CONFLICT (table_name, offset, size) DO UPDATE SET cid= ?5;
         conn.execute("INSERT INTO idns_rows_version(table_name, offset, size, cid) VALUES (?1, ?2, ?3, ?4) ON CONFLICT (table_name, offset, size) DO UPDATE SET cid= ?5;", 
@@ -175,7 +175,7 @@ impl TableSync {
             if let Ok(sync_result) = table_result {
                 if let Ok(row_data) = sync_result.row {
                     //add to ipfs
-                    let cid = crate::utils::ipfs_add_content(row_data.encode_to_vec())?;
+                    let cid = crate::utils::ipfs_add_content(row_data.encode_to_vec()).await?;
 
                     //table
                     conn.execute(

@@ -24,7 +24,7 @@ serde_json = { version = "1.0" }
 
 #IDNS.ETH
 idns-eth-core = { path = "../idns-core", version = "*" }
-ipfs-api-backend-hyper = "0.5"
+ipfs-api-backend-hyper = { version = "0.5", features = ["with-send-sync"] }
 
 [build-dependencies]
 prost-build = "0.11"

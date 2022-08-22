@@ -1,12 +1,11 @@
 #[macro_use]
 extern crate log;
 
-use idns_eth_networks::{device::get_device_info, vpnc::launch};
+use idns_eth_networks::vpnc::launch;
 use std::{thread, time};
 
 #[tokio::main]
 async fn main() {
-    // println!("{:?}", get_device_info().unwrap());
     if let Err(e) = launch(
         &String::from("49.232.102.140:35093"),
         &String::from("10.0.0.4"),

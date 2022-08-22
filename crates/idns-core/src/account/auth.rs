@@ -45,20 +45,19 @@ pub async fn login(application_key: &str, public_key: &str, phrase: &str) -> Res
         //
         let public_key_from_phrase = format!("{}", HexDisplay::from(&from.public().as_ref()));
         if public_key_from_phrase == public_key || public_key == "" {
-            let mut rng = rand::thread_rng();
-
-            let nonce = format!("{}", rng.next_u32());
-
-            let signature = from.sign(&nonce.as_bytes());
-            let signature_str = format!("{}", HexDisplay::from(&signature.as_ref()));
-
-            let body = &json!({
-                "public_key": public_key_from_phrase,
-                "application_key":application_key,
-                "signature":signature_str,
-                "nonce": nonce}
-            )
-            .to_string();
+            let body = {
+                let mut rng = rand::thread_rng();
+                let nonce = format!("{}", rng.next_u32());
+                let signature = from.sign(&nonce.as_bytes());
+                let signature_str = format!("{}", HexDisplay::from(&signature.as_ref()));
+                &json!({
+                    "public_key": public_key_from_phrase,
+                    "application_key":application_key,
+                    "signature":signature_str,
+                    "nonce": nonce}
+                )
+                .to_string()
+            };
             tracing::debug!("{}", body);
             //本地校验public key
             if let Ok(token) =
@@ -67,12 +66,14 @@ pub async fn login(application_key: &str, public_key: &str, phrase: &str) -> Res
                     .with_context(|| format!("Fail login with public key {}!", public_key))
             {
                 tracing::debug!("{}", token);
-                // 空判断
-                Ok(IdnsToken::new_from_application_token(
+                let idns_token = IdnsToken::new_from_application_token(
                     &public_key_from_phrase.clone(),
                     &String::from(application_key),
                     &token,
-                ))
+                );
+
+                // 空判断
+                Ok(idns_token)
             } else {
                 Err(anyhow!("Fail login, public_key {}!", public_key))
             }
@@ -117,7 +118,7 @@ pub fn encrypt_message(text: &String, password: &str) -> Result<(String, String,
         account_id = format!("{}", HexDisplay::from(&pair.public().as_ref()));
     }
 
-    //保存 salt account_id nonce ciphertext
+    // 保存 salt account_id nonce ciphertext
     Ok((
         crate::utils::encode_b64(&salt),
         account_id,
@@ -146,6 +147,6 @@ pub fn decrypt_message(
         .decrypt_last(&crate::utils::decode_b64(plaintext)?[..])
         .map_err(|err| anyhow!("Decrypting large file: {}", err))?;
 
-    //获取到plaintext
+    // 获取到plaintext
     Ok(String::from_utf8(plaintext)?)
 }

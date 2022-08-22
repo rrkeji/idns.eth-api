@@ -24,6 +24,7 @@ idns-eth-core = { path = "../crates/idns-core", version = "*" }
 idns-eth-networks = { path = "../crates/idns-networks", version = "*" }
 idns-eth-sqlite = { path = "../crates/idns-sqlite", version = "*" }
 idns-eth-wasmer = { path = "../crates/idns-wasmer", version = "*" }
+idns-eth-node = { path = "../crates/idns-node", version = "*" }
 
 [build-dependencies]
 prost-build = "0.11"

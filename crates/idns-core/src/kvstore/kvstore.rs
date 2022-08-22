@@ -114,12 +114,12 @@ pub(crate) async fn _kvstore_post_request(
             .header("content-type", content_type)
             .body(body)?
     };
-    //发送请求
+    // 发送请求
     let mut resp = client.call(request).await?;
 
     tracing::debug!("Response: {:?}", resp.status());
     tracing::debug!("Headers: {:?}", resp.headers());
-    //
+
     let result = hyper::body::to_bytes(resp).await;
     match result {
         Ok(plain) => {

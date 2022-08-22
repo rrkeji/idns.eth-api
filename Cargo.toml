@@ -7,4 +7,5 @@ members = [
     "crates/idns-networks",
     "crates/idns-devices",
     "crates/idns-wasmer",
+    "crates/idns-node",
 ]

@@ -43,5 +43,12 @@ http = "0.2"
 tiny-bip39 = "1.0"
 sp-core = { version = "6.0.0", features = ["std"] }
 
+
+#identity
+# identity = { version = "*", git = "https://github.com/rrkeji/idns-rust-crates" }
+# identity-core = { version = "*", git = "https://github.com/rrkeji/idns-rust-crates" }
+# identity = { version = "*", path = "/Users/suhs/jinisu/idns-rust-crates/identity/identity" }
+# identity-core = { version = "*", path = "/Users/suhs/jinisu/idns-rust-crates/identity/identity-core" }
+
 [dev-dependencies]
 tokio-test = "*"

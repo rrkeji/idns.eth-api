@@ -39,7 +39,7 @@ impl DeviceServiceImpl {
                 vpnc_address: row.get(8)?,
                 icon_url: row.get(9)?,
                 hostname: String::new(),
-                home: format!("{:?}", crate::idns_core::idns_home_path().map_err(|r| r)),
+                home: format!("{:?}", idns_eth_core::idns_home_path().map_err(|r| r)),
             })
         })?;
         for item in _iter {
@@ -70,7 +70,7 @@ impl DeviceServiceImpl {
                 vpnc_address: row.get(8)?,
                 icon_url: row.get(9)?,
                 hostname: String::new(),
-                home: format!("{:?}", crate::idns_core::idns_home_path().map_err(|r| r)),
+                home: format!("{:?}", idns_eth_core::idns_home_path().map_err(|r| r)),
             })
         })?;
         for item in _iter {
@@ -104,7 +104,7 @@ impl DeviceServiceImpl {
                 vpnc_address: row.get(8)?,
                 icon_url: row.get(9)?,
                 hostname: String::new(),
-                home: format!("{:?}", crate::idns_core::idns_home_path().map_err(|r| r)),
+                home: format!("{:?}", idns_eth_core::idns_home_path().map_err(|r| r)),
             })
         })?;
         for item in _iter {
@@ -138,7 +138,7 @@ impl DeviceServiceImpl {
                 vpnc_address: row.get(8)?,
                 icon_url: row.get(9)?,
                 hostname: String::new(),
-                home: format!("{:?}", crate::idns_core::idns_home_path().map_err(|r| r)),
+                home: format!("{:?}", idns_eth_core::idns_home_path().map_err(|r| r)),
             });
             Ok(1)
         })?;
@@ -204,8 +204,9 @@ impl DeviceServiceImpl {
     }
 }
 
+#[async_trait::async_trait]
 impl Handler for DeviceServiceImpl {
-    fn execute(&self, request: Command) -> Result<CommandResponse> {
+    async fn execute(&self, request: Command) -> Result<CommandResponse> {
         let service_name = request.service_name;
         let method_name = request.method_name;
         let message = request.data;

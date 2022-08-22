@@ -1,9 +1,9 @@
-use crate::idns_core::account::Account as AccountImpl;
 use anyhow::{anyhow, Result};
+use idns_eth_core::account::Account as AccountImpl;
 
 use super::DeviceServiceImpl;
+use crate::node::{get_node_info, NodeInfo};
 use idns_eth_api::idns::networks::DeviceEntity;
-use idns_eth_networks::device::{get_device_info, DeviceInfo};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 
@@ -27,7 +27,7 @@ pub fn init_device_node() -> Result<()> {
     //查询该设备是否存在
     if let Some(device_entity) = device_service.find_by_uuid(&device_id)? {
         //获取设备的信息
-        let device_info = get_device_info(
+        let device_info = get_node_info(
             &device_entity.vpnc_address.clone(),
             &tun_mask,
             &server,
@@ -63,10 +63,10 @@ pub fn init_device_node() -> Result<()> {
                 .hostname
                 .as_ref()
                 .map_or(String::new(), |r| r.clone()),
-            home: format!("{:?}", crate::idns_core::idns_home_path()?),
+            home: format!("{:?}", idns_eth_core::idns_home_path()?),
         })?;
     } else {
-        let device_info = get_device_info(&get_tun_ip()?, &tun_mask, &server, &key)?;
+        let device_info = get_node_info(&get_tun_ip()?, &tun_mask, &server, &key)?;
         let device_info = &device_info;
 
         let mac_address = device_info
@@ -104,10 +104,10 @@ pub fn init_device_node() -> Result<()> {
                     .hostname
                     .as_ref()
                     .map_or(String::new(), |r| r.clone()),
-                home: format!("{:?}", crate::idns_core::idns_home_path()?),
+                home: format!("{:?}", idns_eth_core::idns_home_path()?),
             })?;
         } else {
-            let device_info = get_device_info(&get_tun_ip()?, &tun_mask, &server, &key)?;
+            let device_info = get_node_info(&get_tun_ip()?, &tun_mask, &server, &key)?;
             let device_info = &device_info;
             //插入
             device_service.create_device(&DeviceEntity {
@@ -140,7 +140,7 @@ pub fn init_device_node() -> Result<()> {
                     .hostname
                     .as_ref()
                     .map_or(String::new(), |r| r.clone()),
-                home: format!("{:?}", crate::idns_core::idns_home_path()?),
+                home: format!("{:?}", idns_eth_core::idns_home_path()?),
             })?;
         }
     }
@@ -155,11 +155,11 @@ pub fn get_tun_ip() -> Result<String> {
 
 pub fn get_device_node_id() -> Result<String> {
     //获取设备， 首先查看本地的文件中是否有设备ID
-    let exists = crate::idns_core::utils::files::file_exists("", "device.json")?;
+    let exists = idns_eth_core::utils::files::file_exists("", "device.json")?;
 
     if exists {
         //存在
-        let json_str = crate::idns_core::utils::files::read_string_from_file("", "device.json")?;
+        let json_str = idns_eth_core::utils::files::read_string_from_file("", "device.json")?;
 
         let device: DeviceJson =
             serde_json::from_str(json_str.as_str()).map_err(|e| anyhow!("{}", e))?;
@@ -175,7 +175,7 @@ pub fn get_device_node_id() -> Result<String> {
         })
         .to_string();
 
-        if let Ok(_) = crate::idns_core::utils::files::write_to_file(
+        if let Ok(_) = idns_eth_core::utils::files::write_to_file(
             "",
             "device.json",
             &file_content.as_bytes().to_vec(),

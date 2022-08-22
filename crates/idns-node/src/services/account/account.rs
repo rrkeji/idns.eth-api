@@ -1,7 +1,7 @@
 use idns_eth_api::idns::account::GenerateAccountResponse;
 use idns_eth_api::{response, Command, CommandResponse, Error, Handler, Result};
 
-use crate::idns_core::account::Account as AccountImpl;
+use idns_eth_core::account::Account as AccountImpl;
 pub struct AccountServiceImpl;
 
 impl AccountServiceImpl {
@@ -23,8 +23,9 @@ impl AccountServiceImpl {
     }
 }
 
+#[async_trait::async_trait]
 impl Handler for AccountServiceImpl {
-    fn execute(&self, request: Command) -> Result<CommandResponse> {
+    async fn execute(&self, request: Command) -> Result<CommandResponse> {
         let service_name = request.service_name;
         let method_name = request.method_name;
 

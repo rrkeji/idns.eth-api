@@ -19,7 +19,7 @@ struct AccountJson {
     pub cipher_text: String,
 }
 
-use crate::idns_core::account::{
+use idns_eth_core::account::{
     decrypt_message as decrypt_message_impl, encrypt_message as encrypt_message_impl,
     login as login_impl, IdnsToken,
 };
@@ -33,45 +33,34 @@ impl AuthServiceImpl {
 
 impl AuthServiceImpl {
     /// 是否在线
-    pub fn is_online(&self) -> Result<bool> {
+    pub async fn is_online(&self) -> Result<bool> {
         let token = crate::get_token()?;
 
-        let handle = Handle::current();
-        let handle_std = std::thread::spawn(move || {
-            handle.block_on(async move {
-                //从服务中获取key值，进而判断是否在线
-                if let Ok(_) = crate::idns_core::kvstore::KVStore::get_value(&token).await {
-                    Ok(true)
-                } else {
-                    Err(anyhow!("连接失败!"))
-                }
-            })
-        });
-
-        match handle_std.join() {
-            Ok(_) => Ok(true),
-            Err(_err) => Err(Error::RuntimeVersion),
+        if let Ok(_) = idns_eth_core::kvstore::KVStore::get_value(&token).await {
+            Ok(true)
+        } else {
+            Ok(false)
         }
     }
 
-    pub fn is_login(&self) -> Result<bool> {
+    pub async fn is_login(&self) -> Result<bool> {
         //
-        self.is_online()
+        self.is_online().await
     }
 
     /// 判断是否已经导入账号
     pub fn is_imported(&self) -> Result<bool> {
         //判断是否有account.json文件
-        let json_str = crate::idns_core::utils::files::read_string_from_file("", "account.json")?;
+        let json_str = idns_eth_core::utils::files::read_string_from_file("", "account.json")?;
         let account: AccountJson =
             serde_json::from_str(json_str.as_str()).map_err(|e| anyhow!("{}", e))?;
         //
         Ok(account.public_key.as_str() != "")
     }
     //
-    pub fn login_by_password(&self, password: &String) -> Result<IdnsToken> {
+    pub async fn login_by_password(&self, password: &String) -> Result<IdnsToken> {
         //读取文件中的内容， 进行尝试解密
-        let json_str = crate::idns_core::utils::files::read_string_from_file("", "account.json")?;
+        let json_str = idns_eth_core::utils::files::read_string_from_file("", "account.json")?;
         //
         let account: AccountJson =
             serde_json::from_str(json_str.as_str()).map_err(|e| anyhow!("{}", e))?;
@@ -82,10 +71,14 @@ impl AuthServiceImpl {
             password.clone().as_str(),
         )?;
 
-        self.import_and_login(&plain, password, false)
+        self.import_and_login(&plain, password, false).await
     }
 
-    pub fn reset_password(&self, old_password: &String, new_password: &String) -> Result<bool> {
+    pub async fn reset_password(
+        &self,
+        old_password: &String,
+        new_password: &String,
+    ) -> Result<bool> {
         //比较原密码是否一致
         let password = crate::get_password()?;
         if password.as_str() != old_password.as_str() {
@@ -93,7 +86,7 @@ impl AuthServiceImpl {
             return Ok(false);
         }
         //
-        let json_str = crate::idns_core::utils::files::read_string_from_file("", "account.json")?;
+        let json_str = idns_eth_core::utils::files::read_string_from_file("", "account.json")?;
         //
         let account: AccountJson =
             serde_json::from_str(json_str.as_str()).map_err(|e| anyhow!("{}", e))?;
@@ -104,12 +97,12 @@ impl AuthServiceImpl {
             old_password.clone().as_str(),
         )?;
         //重新保存文件
-        self.import_and_login(&plain, new_password, true)?;
+        self.import_and_login(&plain, new_password, true).await?;
 
         Ok(false)
     }
 
-    pub fn import_and_login(
+    pub async fn import_and_login(
         &self,
         phrase: &String,
         password: &String,
@@ -117,7 +110,9 @@ impl AuthServiceImpl {
     ) -> Result<IdnsToken> {
         //
         let application_key = crate::get_Application_key()?;
-        let token = self.login(application_key.clone(), String::new(), phrase.clone())?;
+        let token = self
+            .login(application_key.clone(), String::new(), phrase.clone())
+            .await?;
         //
         //加密
         if let Ok((salt, account_id, nonce, ciphertext)) =
@@ -133,7 +128,7 @@ impl AuthServiceImpl {
 
             if update_file {
                 //保存文件成功之后在保存密码到内存中
-                if let Ok(_) = crate::idns_core::utils::files::write_to_file(
+                if let Ok(_) = idns_eth_core::utils::files::write_to_file(
                     "",
                     "account.json",
                     &file_content.as_bytes().to_vec(),
@@ -170,44 +165,28 @@ impl AuthServiceImpl {
         Ok(true)
     }
 
-    pub fn login(
+    pub async fn login(
         &self,
         application_key: String,
         public_key: String,
         phrase: String,
     ) -> Result<IdnsToken> {
-        //
-        let handle = Handle::current();
-        let handle_std = std::thread::spawn(move || {
-            handle.block_on(async move {
-                if let Ok(token) = login_impl(
-                    application_key.as_str(),
-                    public_key.as_str(),
-                    phrase.as_str(),
-                )
-                .await
-                {
-                    //
-                    {
-                        let mut w = crate::TOKEN.write().unwrap();
-                        *w = Some(token.clone());
-                    }
-                    //查看数据库链接
-                    // crate::database::init_system_database(&token.clone())?;
-                    Ok(IdnsToken {
-                        application_key: token.application_key,
-                        public_key: token.public_key,
-                        token: token.token,
-                    })
-                } else {
-                    Err(anyhow!(""))
-                }
-            })
-        });
-
-        match handle_std.join() {
-            Ok(res) => Ok(res?),
-            Err(_err) => Err(Error::RuntimeVersion),
+        if let Ok(token) = login_impl(
+            application_key.as_str(),
+            public_key.as_str(),
+            phrase.as_str(),
+        )
+        .await
+        {
+            let idns_token = IdnsToken {
+                application_key: token.application_key,
+                public_key: token.public_key,
+                token: token.token,
+            };
+            let _ = crate::utils::set_token(&idns_token)?;
+            Ok(idns_token)
+        } else {
+            Err(anyhow!(""))?
         }
     }
 
@@ -255,8 +234,9 @@ impl AuthServiceImpl {
     }
 }
 
+#[async_trait::async_trait]
 impl Handler for AuthServiceImpl {
-    fn execute(&self, request: Command) -> Result<CommandResponse> {
+    async fn execute(&self, request: Command) -> Result<CommandResponse> {
         let service_name = request.service_name;
         let method_name = request.method_name;
         let message = request.data;
@@ -274,10 +254,12 @@ impl Handler for AuthServiceImpl {
                 );
             } else if method_name == "is_online" {
                 //
-                return response(self.is_online().map(|r| BoolMessage { data: r }));
+                let res = self.is_online().await;
+                return response(res.map(|r| BoolMessage { data: r }));
             } else if method_name == "is_login" {
                 //
-                return response(self.is_login().map(|r| BoolMessage { data: r }));
+                let res = self.is_login().await;
+                return response(res.map(|r| BoolMessage { data: r }));
             } else if method_name == "is_imported" {
                 //
                 return response(self.is_imported().map(|r| BoolMessage { data: r }));
@@ -288,20 +270,19 @@ impl Handler for AuthServiceImpl {
                 //
                 let request = StringMessage::decode(Bytes::from(message))?;
                 //
-                return response(
-                    self.login_by_password(&request.data)
-                        .map(|r| LoginResponse {
-                            application_key: r.application_key.clone(),
-                            public_key: r.public_key.clone(),
-                            token: r.token.clone(),
-                        }),
-                );
+                let res = self.login_by_password(&request.data).await;
+                return response(res.map(|r| LoginResponse {
+                    application_key: r.application_key.clone(),
+                    public_key: r.public_key.clone(),
+                    token: r.token.clone(),
+                }));
             } else if method_name == "import_and_login" {
                 //
                 let request = LoginRequest::decode(Bytes::from(message))?;
 
                 return response(
                     self.import_and_login(&request.phrase, &request.password, true)
+                        .await
                         .map(|r| LoginResponse {
                             application_key: r.application_key.clone(),
                             public_key: r.public_key.clone(),

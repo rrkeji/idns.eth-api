@@ -77,7 +77,7 @@ impl DataBaseSync {
                 })
                 .collect(),
         };
-        let cid = crate::utils::ipfs_add_content(table_array.encode_to_vec())?;
+        let cid = crate::utils::ipfs_add_content(table_array.encode_to_vec()).await?;
         tracing::debug!("同步数据库:Cid:{}", cid);
         //提交到线上
         let (latest_online_cid, latest_online_version) = KVStore::get_value(token).await?;

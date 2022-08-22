@@ -3,18 +3,21 @@ use crate::Error;
 use anyhow::Result as AnyhowResult;
 use prost::Message;
 use std::collections::HashMap;
+
 pub type Result<T> = AnyhowResult<T, Error>;
 
+#[async_trait::async_trait]
 pub trait Handler {
     //
-    fn execute(&self, command: Command) -> Result<CommandResponse>;
+    async fn execute(&self, command: Command) -> Result<CommandResponse>;
 }
 
 //
 pub struct EmptyHandler;
 
+#[async_trait::async_trait]
 impl Handler for EmptyHandler {
-    fn execute(&self, _command: Command) -> Result<CommandResponse> {
+    async fn execute(&self, _command: Command) -> Result<CommandResponse> {
         Ok(CommandResponse {
             headers: HashMap::<String, String>::new(),
             status: 0,

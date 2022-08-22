@@ -1,7 +1,7 @@
 use anyhow::{anyhow, Result};
 
 #[derive(Debug)]
-pub struct DeviceInfo {
+pub struct NodeInfo {
     pub device_type: Option<String>,
     pub os_type: Option<String>,
     pub mac: Option<String>,
@@ -9,14 +9,14 @@ pub struct DeviceInfo {
     pub vpnc_address: Option<String>,
 }
 
-pub fn get_device_info(
+pub fn get_node_info(
     tun_ip: &String,
     tun_mask: &String,
     server: &String,
     key: &String,
-) -> Result<DeviceInfo> {
+) -> Result<NodeInfo> {
     //自身设备局域网接入,并返回相关的连接信息
-    let _ = crate::vpnc::launch(server, tun_ip, tun_mask, key)?;
+    // let _ = crate::vpnc::launch(server, tun_ip, tun_mask, key)?;
 
     let vpnc_address = Some(tun_ip.clone());
     let device_type = Some(String::from("PC"));
@@ -41,7 +41,7 @@ pub fn get_device_info(
             _ => None,
         };
 
-        return Ok(DeviceInfo {
+        return Ok(NodeInfo {
             os_type,
             mac,
             vpnc_address,
