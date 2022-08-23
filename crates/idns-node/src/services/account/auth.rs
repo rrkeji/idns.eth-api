@@ -43,6 +43,13 @@ impl AuthServiceImpl {
         }
     }
 
+    pub async fn unimport(&self) -> Result<bool> {
+        //TODO 检查是否有数据未保存
+        idns_eth_core::utils::files::file_delete("", "account.json")?;
+
+        Ok(true)
+    }
+
     pub async fn is_login(&self) -> Result<bool> {
         //
         self.is_online().await
@@ -147,6 +154,55 @@ impl AuthServiceImpl {
                     *w = Some(password.clone());
                 }
                 return Ok(token);
+            }
+        }
+        Err(anyhow!(""))?
+    }
+
+    pub async fn login_by_identity(&self, identity: &String) -> Result<IdnsToken> {
+        //获取到identity的信息
+        //
+        let identity_phrase = String::from("");
+
+        self.import_and_login(&identity_phrase, &crate::get_password()?, true)
+            .await
+    }
+
+    pub async fn user_import_and_login(
+        &self,
+        phrase: &String,
+        password: &String,
+    ) -> Result<IdnsToken> {
+        //
+        let application_key = crate::get_Application_key()?;
+        let token = self
+            .login(application_key.clone(), String::new(), phrase.clone())
+            .await?;
+        //
+        //加密
+        if let Ok((salt, account_id, nonce, ciphertext)) =
+            encrypt_message_impl(&phrase, password.as_str())
+        {
+            let file_content = json!(AccountJson {
+                salt,
+                public_key: account_id,
+                nonce,
+                cipher_text: ciphertext
+            })
+            .to_string();
+
+            //保存文件成功之后在保存密码到内存中
+            if let Ok(_) = idns_eth_core::utils::files::write_to_file(
+                "",
+                "user.json",
+                &file_content.as_bytes().to_vec(),
+            ) {
+                //保存密码
+                {
+                    let mut w = crate::PASSWORD.write().unwrap();
+                    *w = Some(password.clone());
+                }
+                return Ok(token.clone());
             }
         }
         Err(anyhow!(""))?
@@ -256,6 +312,10 @@ impl Handler for AuthServiceImpl {
                 //
                 let res = self.is_online().await;
                 return response(res.map(|r| BoolMessage { data: r }));
+            } else if method_name == "unimport" {
+                //
+                let res = self.unimport().await;
+                return response(res.map(|r| BoolMessage { data: r }));
             } else if method_name == "is_login" {
                 //
                 let res = self.is_login().await;
@@ -282,6 +342,30 @@ impl Handler for AuthServiceImpl {
 
                 return response(
                     self.import_and_login(&request.phrase, &request.password, true)
+                        .await
+                        .map(|r| LoginResponse {
+                            application_key: r.application_key.clone(),
+                            public_key: r.public_key.clone(),
+                            token: r.token.clone(),
+                        }),
+                );
+            } else if method_name == "login_by_identity" {
+                //
+                let request = StringMessage::decode(Bytes::from(message))?;
+
+                return response(self.login_by_identity(&request.data).await.map(|r| {
+                    LoginResponse {
+                        application_key: r.application_key.clone(),
+                        public_key: r.public_key.clone(),
+                        token: r.token.clone(),
+                    }
+                }));
+            } else if method_name == "user_import_and_login" {
+                //
+                let request = LoginRequest::decode(Bytes::from(message))?;
+
+                return response(
+                    self.user_import_and_login(&request.phrase, &request.password)
                         .await
                         .map(|r| LoginResponse {
                             application_key: r.application_key.clone(),

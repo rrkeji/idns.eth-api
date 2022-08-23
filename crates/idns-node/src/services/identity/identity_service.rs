@@ -14,9 +14,15 @@ impl IdentityServiceImpl {
 
 impl IdentityServiceImpl {
     ///
-    pub async fn list_identities(&self, public_key: &String) -> Result<Vec<IdentityEntity>> {
-        let res = idns_eth_core::identity::IdnsIdentity::identities(public_key).await?;
+    pub async fn list_identities(&self) -> Result<Vec<IdentityEntity>> {
+        let res =
+            idns_eth_core::identity::IdnsIdentity::identities(&crate::get_password()?).await?;
         Ok(res)
+    }
+
+    pub async fn query_identity_by_identity(&self, identity: &String) -> Result<IdentityEntity> {
+        idns_eth_core::identity::IdnsIdentity::query_identity_by_identity(&crate::get_password()?)
+            .await?
     }
 }
 
@@ -29,10 +35,9 @@ impl Handler for IdentityServiceImpl {
 
         if service_name == "idns.system.identity.identity" {
             if method_name == "list_identities" {
-                let public_key = StringMessage::decode(Bytes::from(message))?;
                 //
                 return response(
-                    self.list_identities(&public_key.data)
+                    self.list_identities()
                         .await
                         .map(|r| ListIdentitiesResponse { identities: r }),
                 );

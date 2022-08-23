@@ -20,3 +20,19 @@ message IdentityEntity{
 message ListIdentitiesResponse{
     repeated IdentityEntity identities = 1;
 }
+
+
+message IdentityCreateRequest{
+    string name = 3;
+    string avatar = 4;
+    string identity_type = 5;
+    string description = 6;
+}
+
+message IdentityUpdateRequest{
+    string identity = 1;
+    string name = 3;
+    string avatar = 4;
+    string identity_type = 5;
+    string description = 6;
+}

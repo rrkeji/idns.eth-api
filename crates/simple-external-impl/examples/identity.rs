@@ -8,9 +8,15 @@ async fn main() -> Result<()> {
         .with_max_level(tracing::Level::DEBUG)
         .init();
     tracing::info!("测试.");
-    ExternalApiIdentity::identities(&String::from(
-        "b68a805c4064be1d49529abd0147fc2f08962c0594f0827d8b48b8864abd0625",
-    ))
+    let res = ExternalApiIdentity {
+        public_key: String::from(
+            "7a0b9c92b65218204416d335c7b85ef9d47da1ba92bbb2b3a23224c6cd38ce54",
+        ),
+        signature: String::from(""),
+        nonce: String::from(""),
+    }
+    .identities()
     .await;
+    tracing::info!("返回:{:?}.", res);
     Ok(())
 }

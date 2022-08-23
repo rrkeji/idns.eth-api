@@ -38,3 +38,13 @@ pub fn file_exists(path: &str, filename: &str) -> Result<bool> {
     let filename = storage_path.join(filename);
     Ok(filename.as_path().exists())
 }
+
+pub fn file_delete(path: &str, filename: &str) -> Result<bool> {
+    //
+    let storage_path = crate::utils::idns_home_path()?.join(path);
+    std::fs::create_dir_all(storage_path.as_path())?;
+    let filename = storage_path.join(filename);
+
+    std::fs::remove_file(filename)?;
+    Ok(true)
+}
