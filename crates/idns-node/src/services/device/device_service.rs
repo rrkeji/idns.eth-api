@@ -48,6 +48,23 @@ impl DeviceServiceImpl {
         Ok(res)
     }
 
+    pub fn list_device_vpnc_address(&self) -> Result<Vec<String>> {
+        _schema()?;
+        //获取conn
+        let arc_conn = crate::get_connection()?;
+        let mut stmt = arc_conn.prepare("SELECT  mac_address  FROM devices where status = 1")?;
+        let mut res = Vec::<String>::new();
+
+        let _iter = stmt.query_map([], |row| {
+            let vpnc_address: String = row.get(0)?;
+            Ok(vpnc_address)
+        })?;
+        for item in _iter {
+            res.push(item?);
+        }
+        Ok(res)
+    }
+
     pub fn find_by_uuid(&self, device_uuid: &String) -> Result<Option<DeviceEntity>> {
         _schema()?;
         //获取conn
@@ -146,7 +163,7 @@ impl DeviceServiceImpl {
     }
 
     pub fn current_device_id(&self) -> Result<String> {
-        Ok(super::get_device_node_id()?)
+        Ok(crate::node::get_device_node_id()?)
     }
 
     pub fn delete_device(&self, device_id: u64) -> Result<bool> {

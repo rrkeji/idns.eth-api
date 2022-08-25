@@ -43,7 +43,7 @@ sp-core = { version = "6.0.0", features = ["std"] }
 
 #IDNS.ETH
 idns-eth-api = { path = "../../api", version = "*" }
-simple-external-impl = { path = "../simple-external-impl", version = "*" }
+simple-external-impl = { path = "../simple-external-impl", version = "0.1.0" }
 
 [dev-dependencies]
 tokio-test = "*"

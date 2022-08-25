@@ -1,6 +1,7 @@
 use anyhow::Result;
 use idns_eth_core::account::{login, ALICE_PHRASE, ALICE_PUBLIC_KEY};
 use idns_eth_node::{init_application, init_node, init_node_async};
+use std::{thread, time};
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -19,9 +20,10 @@ async fn main() -> Result<()> {
     .await?;
     tracing::info!("Token{:?}", token);
 
-    init_node(&token);
+    init_node_async(&token).await;
 
     tracing::info!("Token。。。。。。。。。。。。。。");
-
+    let ten_millis = time::Duration::from_millis(100000000000);
+    thread::sleep(ten_millis);
     Ok(())
 }

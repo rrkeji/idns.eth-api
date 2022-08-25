@@ -59,15 +59,26 @@ pub fn init_node(token: &IdnsToken) -> Result<()> {
     //启动系统数据库
     tracing::debug!("启动系统数据库");
     let arc_conn = Arc::new(Connection::open(token)?);
-    crate::utils::set_connection(arc_conn.clone()).context("启动系统数据库")?;
+    crate::utils::set_connection(arc_conn.clone()).context("启动系统数据库失败")?;
 
+    //获取设备ID
+    let device_id = crate::node::get_device_node_id()?;
+    let tun_ip = crate::node::get_tun_ip(&device_id)?;
     //启动网络服务
     tracing::debug!("启动网络服务");
-    idns_eth_networks::launch().context("启动网络服务")?;
+    //获取设备的一些配置信息
+    idns_eth_networks::launch(&tun_ip).context("启动网络服务失败")?;
 
     //启动注册wasmer服务
-
     //启动设备服务
+    crate::node::init_device_node(&tun_ip);
+
+    // TODO 后续修改为消息的形式,
+    let user_phrase = idns_eth_core::get_user_phrase(&crate::get_password()?)?;
+    simple_external_impl::set_external_api_identity_signature(idns_eth_core::get_signature_nonce(
+        &user_phrase,
+    )?);
+
     //启动HTTP文件服务
     tracing::debug!("启动HTTP文件服务");
     http::Server::new().start()?;
@@ -92,13 +103,23 @@ pub async fn init_node_async(token: &IdnsToken) -> Result<()> {
     let arc_conn = Arc::new(Connection::open(token)?);
     crate::utils::set_connection(arc_conn.clone()).context("启动系统数据库")?;
 
+    //获取设备ID
+    let device_id = crate::node::get_device_node_id()?;
+    let tun_ip = crate::node::get_tun_ip(&device_id)?;
     //启动网络服务
     tracing::debug!("启动网络服务");
-    idns_eth_networks::launch().context("启动网络服务")?;
+    //获取设备的一些配置信息
+    idns_eth_networks::launch(&tun_ip).context("启动网络服务失败")?;
 
     //启动注册wasmer服务
-
     //启动设备服务
+    crate::node::init_device_node(&tun_ip);
+
+    // TODO 后续修改为消息的形式,
+    let user_phrase = idns_eth_core::get_user_phrase(&crate::get_password()?)?;
+    simple_external_impl::set_external_api_identity_signature(idns_eth_core::get_signature_nonce(
+        &user_phrase,
+    )?);
 
     //启动HTTP文件服务
     tracing::debug!("启动HTTP文件服务");
@@ -110,4 +131,28 @@ pub async fn init_node_async(token: &IdnsToken) -> Result<()> {
         .context("启动核心应用服务")?;
 
     Ok(())
+}
+/// 登录
+pub async fn import_and_login(phrase: &String, password: &String) -> Result<IdnsToken> {
+    let res = services::AuthServiceImpl::new()
+        .import_and_login(phrase, password, true)
+        .await?;
+
+    Ok(res)
+}
+
+/// 判断是否已经导入账号
+pub async fn is_imported() -> Result<bool> {
+    let res = services::AuthServiceImpl::new().is_imported()?;
+
+    Ok(res)
+}
+
+/// 通过密码登录
+pub async fn login_by_password(password: &String) -> Result<IdnsToken> {
+    let res = services::AuthServiceImpl::new()
+        .login_by_password(password)
+        .await?;
+
+    Ok(res)
 }

@@ -10,10 +10,14 @@ message IdentityEntity{
     string identity_type = 5;
     string description = 6;
     string cid = 7;
-    string ciphertext = 8;
-    string salt = 9;
-    string nonce = 10;
-    uint64 create_at = 11;
+    string ed25519_ciphertext = 8;
+    string ed25519_salt = 9;
+    string ed25519_nonce = 10;
+    string sr25519_public_key = 11;
+    string sr25519_ciphertext = 12;
+    string sr25519_salt = 13;
+    string sr25519_nonce = 14;
+    uint64 create_at = 15;
 }
 
  
@@ -33,6 +37,44 @@ message IdentityUpdateRequest{
     string identity = 1;
     string name = 3;
     string avatar = 4;
-    string identity_type = 5;
     string description = 6;
+}
+
+// meta_credential
+message MetaCredentialEntity{
+    string source_identity = 1;
+    string name = 2;
+    string credential_type = 3;
+    uint32 expires = 4;
+    string assert_expression = 5;
+    string parameters = 6;
+    string description = 7;
+    uint32 issuance_date = 8;
+    uint32 issuance_status = 9;
+    uint64 create_at = 15;
+}
+
+message ListMetaCredentialsResponse{
+    repeated MetaCredentialEntity meta_credentials = 1;
+}
+
+
+message MetaCredentialCreateRequest{
+    string source_identity = 1;
+    string name = 3;
+    string credential_type = 4;
+    uint32 expires = 5;
+    string assert_expression = 6;
+    string parameters = 7;
+    string description = 9;
+}
+
+message MetaCredentialUpdateRequest{
+    string source_identity = 1;
+    string name = 3;
+    string credential_type = 4;
+    uint32 expires = 5;
+    string assert_expression = 6;
+    string parameters = 7;
+    string description = 9;
 }

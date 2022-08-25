@@ -2,7 +2,7 @@ pub mod registe_center;
 
 mod account;
 mod database;
-mod device;
+pub(crate) mod device;
 mod identity;
 mod storage;
 mod wasmer;
@@ -11,12 +11,14 @@ use idns_eth_api::idns::system::{Command, CommandResponse};
 pub use idns_eth_api::{EmptyMessage, Error, Handler, Result};
 use std::collections::HashMap;
 
-use account::{AccountServiceImpl, AuthServiceImpl};
+use account::AccountServiceImpl;
 use database::DatabaseServiceImpl;
 use device::DeviceServiceImpl;
-use identity::IdentityServiceImpl;
+use identity::{IdentityServiceImpl, MetaCredentialServiceImpl};
 use storage::StorageServiceImpl;
 use wasmer::SdkTaskServiceImpl;
+
+pub(crate) use account::AuthServiceImpl;
 
 use tokio::runtime::Handle;
 //
@@ -49,7 +51,11 @@ pub async fn async_execute(request: Command) -> Result<CommandResponse> {
         } else if service_name.starts_with("idns.system.auth") {
             return AuthServiceImpl::new().execute(request).await;
         } else if service_name.starts_with("idns.system.identity") {
-            return IdentityServiceImpl::new().execute(request).await;
+            if service_name.starts_with("idns.system.identity.identity") {
+                return IdentityServiceImpl::new().execute(request).await;
+            } else if service_name.starts_with("idns.system.identity.meta_credential") {
+                return MetaCredentialServiceImpl::new().execute(request).await;
+            }
         } else if service_name.starts_with("idns.system.storage") {
             return StorageServiceImpl::new().execute(request).await;
         } else if service_name.starts_with("idns.system.device") {

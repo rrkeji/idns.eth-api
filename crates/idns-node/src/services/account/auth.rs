@@ -57,6 +57,12 @@ impl AuthServiceImpl {
 
     /// 判断是否已经导入账号
     pub fn is_imported(&self) -> Result<bool> {
+        //查看文件是否存在
+        let exist = idns_eth_core::utils::files::file_exists("", "account.json")?;
+        if !exist {
+            return Ok(false);
+        }
+
         //判断是否有account.json文件
         let json_str = idns_eth_core::utils::files::read_string_from_file("", "account.json")?;
         let account: AccountJson =
@@ -161,8 +167,23 @@ impl AuthServiceImpl {
 
     pub async fn login_by_identity(&self, identity: &String) -> Result<IdnsToken> {
         //获取到identity的信息
-        //
-        let identity_phrase = String::from("");
+        let identity_entity = crate::services::IdentityServiceImpl::new()
+            .query_identity_by_identity(identity)
+            .await?;
+        //解密出秘钥
+        let password = _get_hash()?;
+
+        tracing::debug!("login_by_identity:{}-{}", identity, password);
+
+        let salt = identity_entity.sr25519_salt.clone();
+        let cipher = identity_entity.sr25519_ciphertext.clone();
+        let nonce = identity_entity.sr25519_nonce.clone();
+
+        tracing::debug!("cipher:{} salt:{} nonce:{}", cipher, salt, nonce);
+        let identity_phrase =
+            decrypt_message_impl(&salt, &nonce, &cipher, password.clone().as_str())?;
+
+        tracing::debug!("login_by_identity:{}-{}", identity, identity_phrase);
 
         self.import_and_login(&identity_phrase, &crate::get_password()?, true)
             .await
@@ -202,6 +223,7 @@ impl AuthServiceImpl {
                     let mut w = crate::PASSWORD.write().unwrap();
                     *w = Some(password.clone());
                 }
+
                 return Ok(token.clone());
             }
         }
@@ -377,4 +399,11 @@ impl Handler for AuthServiceImpl {
         }
         Err(Error::NotFoundService)
     }
+}
+
+fn _get_hash() -> Result<String> {
+    //
+    let phrase = idns_eth_core::get_user_phrase(&crate::get_password()?)?;
+    let digest = md5::compute(phrase.as_str());
+    Ok(format!("{:x}", digest))
 }

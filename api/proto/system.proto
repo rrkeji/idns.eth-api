@@ -48,6 +48,11 @@ message StringMessage{
     string data = 1;
 }
 
+message StringPairMessage{
+    string first = 1;
+    string second = 2;
+}
+
 message DatabaseQuery{
     string sql = 1;
     uint32 size = 2;

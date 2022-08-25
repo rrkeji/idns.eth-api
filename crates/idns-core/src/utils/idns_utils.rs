@@ -42,11 +42,20 @@ pub fn idns_home_path() -> Result<PathBuf> {
 pub fn get_signature_nonce(phrase: &String) -> Result<(String, String, String)> {
     //
     if let Ok((from, _)) = sr25519::Pair::from_phrase(phrase.as_str(), None) {
+        use std::time::{SystemTime, UNIX_EPOCH};
+
         //
         let public_key = format!("{}", HexDisplay::from(&from.public().as_ref()));
 
-        let mut rng = rand::thread_rng();
-        let nonce = format!("{}", rng.next_u32());
+        // let mut rng = rand::thread_rng();
+        // let nonce = format!("{}", rng.next_u32());
+        let nonce = format!(
+            "{}",
+            SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .unwrap()
+                .as_millis()
+        );
         let signature = from.sign(&nonce.as_bytes());
         let signature_str = format!("{}", HexDisplay::from(&signature.as_ref()));
         Ok((public_key, signature_str, nonce))
@@ -55,12 +64,56 @@ pub fn get_signature_nonce(phrase: &String) -> Result<(String, String, String)> 
     }
 }
 
-pub(crate) fn get_user_phrase(password: &String) -> Result<String> {
-    //
-    Ok(String::from(crate::account::ALICE_PHRASE))
+use serde::{Deserialize, Serialize};
+
+#[derive(Deserialize, Serialize)]
+struct AccountJson {
+    pub salt: String,
+    pub public_key: String,
+    pub nonce: String,
+    pub cipher_text: String,
 }
 
-pub(crate) fn get_account_phrase(password: &String) -> Result<String> {
+pub fn get_user_phrase(password: &String) -> Result<String> {
+    //user.json
+    let json_str = crate::utils::files::read_string_from_file("", "user.json")?;
+    let account: AccountJson =
+        serde_json::from_str(json_str.as_str()).map_err(|e| anyhow!("{}", e))?;
+    //解密
+    let salt = account.salt.clone();
+    let cipher = account.cipher_text.clone();
+    let nonce = account.nonce.clone();
+    let plain = crate::account::decrypt_message(&salt, &nonce, &cipher, &password)?;
+    Ok(plain)
+}
+
+pub fn get_user_public_key() -> Result<String> {
+    //user.json
+    let json_str = crate::utils::files::read_string_from_file("", "user.json")?;
+    let account: AccountJson =
+        serde_json::from_str(json_str.as_str()).map_err(|e| anyhow!("{}", e))?;
     //
-    Ok(String::from(crate::account::ALICE_PHRASE))
+    Ok(account.public_key.clone())
+}
+
+pub fn get_account_phrase(password: &String) -> Result<String> {
+    //account.json
+    let json_str = crate::utils::files::read_string_from_file("", "account.json")?;
+    let account: AccountJson =
+        serde_json::from_str(json_str.as_str()).map_err(|e| anyhow!("{}", e))?;
+    //解密
+    let salt = account.salt.clone();
+    let cipher = account.cipher_text.clone();
+    let nonce = account.nonce.clone();
+    let plain = crate::account::decrypt_message(&salt, &nonce, &cipher, &password)?;
+    Ok(plain)
+}
+
+pub fn get_account_public_key() -> Result<String> {
+    //user.json
+    let json_str = crate::utils::files::read_string_from_file("", "account.json")?;
+    let account: AccountJson =
+        serde_json::from_str(json_str.as_str()).map_err(|e| anyhow!("{}", e))?;
+    //
+    Ok(account.public_key.clone())
 }

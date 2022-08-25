@@ -1,0 +1,36 @@
+[package]
+name = "idns-eth-cli"
+version = "0.1.0"
+edition = "2021"
+
+
+[[bin]]
+name = "idnctrl"
+path = "src/bin/cli.rs"
+
+[[bin]]
+name = "idnsvr"
+path = "src/bin/server.rs"
+
+[dependencies]
+serde_json = "1.0"
+serde = { version = "1.0", features = ["derive"] }
+prost = "0.11"
+prost-types = "0.11"
+bytes = "1.1.0"
+lazy_static = "1.4.0"
+futures = "0.3"
+anyhow = "1.0"
+tracing-subscriber = { version = "0.3", features = ["fmt"] }
+tracing = "0.1.15"
+tokio = { version = "1", features = ["full"] }
+
+derive_builder = "0.11"
+clap = { version = "3.2.12", features = ["derive"] }
+
+interprocess = "1.1"
+
+# idns-eth-api = { version = "*", git = "https://github.com/rrkeji/idns.eth-api" }
+# idns-eth-sdk = { version = "*", git = "https://github.com/rrkeji/idns.eth-api" }
+idns-eth-api = { version = "*", path = "../../api" }
+idns-eth-sdk = { version = "*", path = "../../sdk" }

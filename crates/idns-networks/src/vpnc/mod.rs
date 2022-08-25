@@ -208,10 +208,11 @@ pub fn launch(server: &String, tun_ip: &String, tun_mask: &String, key: &String)
             try_send_to_lan_addr: Some(false),
         }],
     };
-    let handle = Handle::current();
-    std::thread::spawn(move || {
-        handle.block_on(async move { client::start(ClientConfigFinalize::try_from(config)?).await })
-    });
+    let handle =
+        tokio::spawn(async move { client::start(ClientConfigFinalize::try_from(config)?).await });
+
+    crate::set_vpns_handler(handle)?;
+    // handle.abort();
     Ok(())
 }
 
