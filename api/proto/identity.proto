@@ -128,3 +128,17 @@ message AttributeValueCreateRequest{
     string labels = 5;
     string description = 7;
 }
+
+// attribute_value
+message VerifiableCredentialEntity{
+    string source_identity = 1;
+    string holder_identity = 2;
+    string meta_credential_name = 3;
+    string cid = 4;
+    string description = 7;
+    uint64 create_at = 8;
+}
+
+message ListVerifiableCredentialsResponse{
+    repeated VerifiableCredentialEntity verifiable_credentials = 1;
+}

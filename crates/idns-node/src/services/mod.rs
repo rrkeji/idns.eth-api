@@ -15,7 +15,8 @@ use account::AccountServiceImpl;
 use database::DatabaseServiceImpl;
 use device::DeviceServiceImpl;
 use identity::{
-    AttributeServiceImpl, AttributeValueServiceImpl, IdentityServiceImpl, MetaCredentialServiceImpl,
+    AttributeServiceImpl, AttributeValueServiceImpl, IdentityServiceImpl,
+    MetaCredentialServiceImpl, VerifiableCredentialServiceImpl,
 };
 use storage::StorageServiceImpl;
 use wasmer::SdkTaskServiceImpl;
@@ -61,6 +62,10 @@ pub async fn async_execute(request: Command) -> Result<CommandResponse> {
                 return AttributeServiceImpl::new().execute(request).await;
             } else if service_name.starts_with("idns.system.identity.attribute_value") {
                 return AttributeValueServiceImpl::new().execute(request).await;
+            } else if service_name.starts_with("idns.system.identity.verifiable_credential") {
+                return VerifiableCredentialServiceImpl::new()
+                    .execute(request)
+                    .await;
             }
         } else if service_name.starts_with("idns.system.storage") {
             return StorageServiceImpl::new().execute(request).await;
