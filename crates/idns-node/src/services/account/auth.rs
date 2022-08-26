@@ -223,7 +223,10 @@ impl AuthServiceImpl {
                     let mut w = crate::PASSWORD.write().unwrap();
                     *w = Some(password.clone());
                 }
-
+                // TODO 后续修改为消息的形式,
+                simple_external_impl::set_external_api_identity_signature(
+                    idns_eth_core::get_signature_nonce(phrase)?,
+                );
                 return Ok(token.clone());
             }
         }

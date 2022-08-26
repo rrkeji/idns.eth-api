@@ -1,12 +1,8 @@
 use crate::chain_api::identity::ExternalApiMetaCredential;
 use anyhow::{anyhow, Context, Result};
-use chacha20poly1305::{
-    aead::{stream, NewAead},
-    XChaCha20Poly1305,
-};
+
 use idns_eth_api::idns::identity::{
-    ListIdentitiesResponse, MetaCredentialCreateRequest, MetaCredentialEntity,
-    MetaCredentialUpdateRequest,
+    MetaCredentialCreateRequest, MetaCredentialEntity, MetaCredentialUpdateRequest,
 };
 pub struct IdnsMetaCredential {}
 

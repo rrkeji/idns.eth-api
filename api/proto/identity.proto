@@ -19,12 +19,10 @@ message IdentityEntity{
     string sr25519_nonce = 14;
     uint64 create_at = 15;
 }
-
  
 message ListIdentitiesResponse{
     repeated IdentityEntity identities = 1;
 }
-
 
 message IdentityCreateRequest{
     string name = 3;
@@ -77,4 +75,56 @@ message MetaCredentialUpdateRequest{
     string assert_expression = 6;
     string parameters = 7;
     string description = 9;
+}
+
+// attribute
+message AttributeEntity{
+    string source_identity = 1;
+    string name = 3;
+    string attribute_type = 4;
+    string description = 7;
+    uint64 create_at = 8;
+}
+
+message ListAttributesResponse{
+    repeated AttributeEntity attributes = 1;
+}
+
+message AttributeCreateRequest{
+    string source_identity = 1;
+    string name = 3;
+    string attribute_type = 4;
+    string description = 7;
+}
+
+message AttributeUpdateRequest{
+    string id = 1;
+    string source_identity = 2;
+    string name = 3;
+    string attribute_type = 4;
+    string description = 7;
+}
+
+// attribute_value
+message AttributeValueEntity{
+    string source_identity = 1;
+    string holder_identity = 2;
+    string name = 3;
+    string value = 4;
+    string labels = 5;
+    string description = 7;
+    uint64 create_at = 8;
+}
+
+message ListAttributeValuesResponse{
+    repeated AttributeValueEntity attribute_values = 1;
+}
+
+message AttributeValueCreateRequest{
+    string source_identity = 1;
+    string holder_identity = 2;
+    string name = 3;
+    string value = 4;
+    string labels = 5;
+    string description = 7;
 }

@@ -1,11 +1,8 @@
 use anyhow::{anyhow, Context, Result};
-use hyper::{service::Service, Body, Client, Request};
 use idns_eth_api::idns::identity::{
     ListMetaCredentialsResponse, MetaCredentialCreateRequest, MetaCredentialEntity,
     MetaCredentialUpdateRequest,
 };
-
-use crate::constants::IDENTITY_URL;
 
 use serde::{Deserialize, Serialize};
 use serde_json::json;

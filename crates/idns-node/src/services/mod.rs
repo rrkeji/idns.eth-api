@@ -14,7 +14,9 @@ use std::collections::HashMap;
 use account::AccountServiceImpl;
 use database::DatabaseServiceImpl;
 use device::DeviceServiceImpl;
-use identity::{IdentityServiceImpl, MetaCredentialServiceImpl};
+use identity::{
+    AttributeServiceImpl, AttributeValueServiceImpl, IdentityServiceImpl, MetaCredentialServiceImpl,
+};
 use storage::StorageServiceImpl;
 use wasmer::SdkTaskServiceImpl;
 
@@ -55,6 +57,10 @@ pub async fn async_execute(request: Command) -> Result<CommandResponse> {
                 return IdentityServiceImpl::new().execute(request).await;
             } else if service_name.starts_with("idns.system.identity.meta_credential") {
                 return MetaCredentialServiceImpl::new().execute(request).await;
+            } else if service_name.starts_with("idns.system.identity.attribute.") {
+                return AttributeServiceImpl::new().execute(request).await;
+            } else if service_name.starts_with("idns.system.identity.attribute_value") {
+                return AttributeValueServiceImpl::new().execute(request).await;
             }
         } else if service_name.starts_with("idns.system.storage") {
             return StorageServiceImpl::new().execute(request).await;
