@@ -33,6 +33,8 @@ lazy_static! {
     //application key secret
     pub static ref APPLICATION_KEY: RwLock<Option<String>> = RwLock::new(None);
     pub static ref APPLICATION_SECRET: RwLock<Option<String>> = RwLock::new(None);
+    //identity sr25519_public sr_25519_pharse
+    pub(crate) static ref IDENTITY: RwLock<Option<(String,String,String)>> = RwLock::new(None);
 }
 
 /// 初始化应用,程序启动
@@ -133,14 +135,14 @@ pub async fn init_node_async(token: &IdnsToken) -> Result<()> {
 
     Ok(())
 }
-/// 登录
-pub async fn import_and_login(phrase: &String, password: &String) -> Result<IdnsToken> {
-    let res = services::AuthServiceImpl::new()
-        .import_and_login(phrase, password, true)
-        .await?;
+// 登录
+// pub async fn import_and_login(phrase: &String, password: &String) -> Result<IdnsToken> {
+//     let res = services::AuthServiceImpl::new()
+//         .import_and_login(phrase, password, true)
+//         .await?;
 
-    Ok(res)
-}
+//     Ok(res)
+// }
 
 /// 判断是否已经导入账号
 pub async fn is_imported() -> Result<bool> {

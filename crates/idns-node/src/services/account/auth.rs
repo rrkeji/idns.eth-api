@@ -13,6 +13,7 @@ use tokio::runtime::Handle;
 
 #[derive(Deserialize, Serialize)]
 struct AccountJson {
+    pub identity: String,
     pub salt: String,
     pub public_key: String,
     pub nonce: String,
@@ -84,7 +85,17 @@ impl AuthServiceImpl {
             password.clone().as_str(),
         )?;
 
-        self.import_and_login(&plain, password, false).await
+        let token = self
+            .import_and_login(&plain, password, &account.identity.clone(), false)
+            .await?;
+
+        //
+        let _ = crate::utils::set_identity((
+            account.identity.clone(),
+            account.public_key.clone(),
+            plain,
+        ))?;
+        Ok(token)
     }
 
     pub async fn reset_password(
@@ -110,7 +121,8 @@ impl AuthServiceImpl {
             old_password.clone().as_str(),
         )?;
         //重新保存文件
-        self.import_and_login(&plain, new_password, true).await?;
+        self.import_and_login(&plain, new_password, &account.identity.clone(), true)
+            .await?;
 
         Ok(false)
     }
@@ -119,6 +131,7 @@ impl AuthServiceImpl {
         &self,
         phrase: &String,
         password: &String,
+        identity: &String,
         update_file: bool,
     ) -> Result<IdnsToken> {
         //
@@ -132,6 +145,7 @@ impl AuthServiceImpl {
             encrypt_message_impl(&phrase, password.as_str())
         {
             let file_content = json!(AccountJson {
+                identity: identity.clone(),
                 salt,
                 public_key: account_id,
                 nonce,
@@ -173,8 +187,6 @@ impl AuthServiceImpl {
         //解密出秘钥
         let password = _get_hash()?;
 
-        tracing::debug!("login_by_identity:{}-{}", identity, password);
-
         let salt = identity_entity.sr25519_salt.clone();
         let cipher = identity_entity.sr25519_ciphertext.clone();
         let nonce = identity_entity.sr25519_nonce.clone();
@@ -183,10 +195,16 @@ impl AuthServiceImpl {
         let identity_phrase =
             decrypt_message_impl(&salt, &nonce, &cipher, password.clone().as_str())?;
 
-        tracing::debug!("login_by_identity:{}-{}", identity, identity_phrase);
-
-        self.import_and_login(&identity_phrase, &crate::get_password()?, true)
-            .await
+        let token = self
+            .import_and_login(&identity_phrase, &crate::get_password()?, &identity, true)
+            .await?;
+        //
+        let _ = crate::utils::set_identity((
+            identity.clone(),
+            identity_entity.sr25519_public_key.clone(),
+            identity_phrase,
+        ))?;
+        Ok(token)
     }
 
     pub async fn user_import_and_login(
@@ -205,6 +223,7 @@ impl AuthServiceImpl {
             encrypt_message_impl(&phrase, password.as_str())
         {
             let file_content = json!(AccountJson {
+                identity: String::new(),
                 salt,
                 public_key: account_id,
                 nonce,
@@ -364,19 +383,6 @@ impl Handler for AuthServiceImpl {
                     public_key: r.public_key.clone(),
                     token: r.token.clone(),
                 }));
-            } else if method_name == "import_and_login" {
-                //
-                let request = LoginRequest::decode(Bytes::from(message))?;
-
-                return response(
-                    self.import_and_login(&request.phrase, &request.password, true)
-                        .await
-                        .map(|r| LoginResponse {
-                            application_key: r.application_key.clone(),
-                            public_key: r.public_key.clone(),
-                            token: r.token.clone(),
-                        }),
-                );
             } else if method_name == "login_by_identity" {
                 //
                 let request = StringMessage::decode(Bytes::from(message))?;

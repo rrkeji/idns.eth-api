@@ -70,21 +70,22 @@ pub fn idns_eth_request_raw(
         nonce: String::new(),
     };
     //
-    if let Ok(response) = execute(command_request) {
-        //
-        let headers = response.headers;
-        let mut message = String::from("");
+    match execute(command_request) {
+        Ok(response) => {
+            //
+            let headers = response.headers;
+            let mut message = String::from("");
 
-        let error_key = String::from("error_message");
-        if headers.contains_key(&error_key) {
-            message = headers.get(&error_key).unwrap().clone();
+            let error_key = String::from("error_message");
+            if headers.contains_key(&error_key) {
+                message = headers.get(&error_key).unwrap().clone();
+            }
+            if response.status == 0 {
+                return (0, message, response.data);
+            } else {
+                return (response.status, message, vec![]);
+            }
         }
-        if response.status == 0 {
-            return (0, message, response.data);
-        } else {
-            return (response.status, message, vec![]);
-        }
-    } else {
-        (1, String::from("系统错误!"), vec![])
+        Err(err) => (1, format!("{}", err), vec![]),
     }
 }

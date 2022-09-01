@@ -22,10 +22,10 @@ pub fn init_node(token: &IdnsToken) -> Result<()> {
     Ok(())
 }
 
-/// 登录
-pub async fn import_and_login(phrase: &String, password: &String) -> Result<IdnsToken> {
-    idns_eth_node::import_and_login(phrase, password).await
-}
+// 登录
+// pub async fn import_and_login(phrase: &String, password: &String) -> Result<IdnsToken> {
+//     idns_eth_node::import_and_login(phrase, password).await
+// }
 
 /// 判断是否已经导入账号
 pub async fn is_imported() -> Result<bool> {

@@ -97,7 +97,8 @@ impl Handler for AttributeValueServiceImpl {
                         .map(|r| BoolMessage { data: r }),
                 );
             } else if method_name == "create_attribute_value" {
-                let request = AttributeValueCreateRequest::decode(Bytes::from(message))?;
+                let mut request = AttributeValueCreateRequest::decode(Bytes::from(message))?;
+                request.holder_identity = crate::utils::get_identity()?.0;
                 //
                 return response(
                     self.create_attribute_value(&request)

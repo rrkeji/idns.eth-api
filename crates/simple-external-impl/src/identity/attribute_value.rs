@@ -100,6 +100,7 @@ impl ExternalApiAttributeValue {
     }
     /// 创建属性值
     pub async fn create_attribute_value(request: &AttributeValueCreateRequest) -> Result<()> {
+        //
         let body = &json!({
             "source_identity": request.source_identity.clone(),
             "holder_identity": request.holder_identity.clone(),
