@@ -32,7 +32,7 @@ impl Handler for SdkTaskServiceImpl {
                 //
                 return response(
                     self.service_impl
-                        .list_tasks(&device_uuid.data)
+                        .list_tasks(&device_uuid.data, 1)
                         .map(|r| ListTasksResponse { tasks: r }),
                 );
             } else if method_name == "list_deleted_tasks" {

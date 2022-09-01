@@ -8,6 +8,7 @@ tracing-subscriber = { version = "0.3", features = ["fmt"] }
 tracing = "0.1.15"
 anyhow = "1"
 thiserror = "1"
+lazy_static = "1.4"
 
 tokio = { version = "1", features = ["full"] }
 
@@ -17,8 +18,10 @@ prost-types = "0.11"
 wasmer = "2.3"
 wasmer-wasi = '2.3'
 
+cronjob = "0.4"
+
 #IDNS.ETH
 idns-eth-core = { path = "../idns-core", version = "*" }
 idns-eth-sqlite = { path = "../idns-sqlite", version = "*" }
 idns-eth-api = { path = "../../api", version = "*" }
-idns-eth-networks = { path = "../idns-networks", version = "*" }
+idns-eth-rpc-api = { path = "../idns-rpc-api", version = "*" }

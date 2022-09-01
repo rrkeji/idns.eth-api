@@ -220,17 +220,20 @@ impl AuthServiceImpl {
             ) {
                 //保存密码
                 {
-                    let mut w = crate::PASSWORD.write().unwrap();
+                    let mut w = crate::PASSWORD
+                        .write()
+                        .map_err(|_err| anyhow!("获取锁[PASSWORD]失败"))?;
                     *w = Some(password.clone());
                 }
                 // TODO 后续修改为消息的形式,
+                tracing::debug!("设置用户的签名");
                 simple_external_impl::set_external_api_identity_signature(
                     idns_eth_core::get_signature_nonce(phrase)?,
-                );
+                )?;
                 return Ok(token.clone());
             }
         }
-        Err(anyhow!(""))?
+        Err(anyhow!("登录失败"))?
     }
     ///登出
     pub fn logout(&self) -> Result<bool> {

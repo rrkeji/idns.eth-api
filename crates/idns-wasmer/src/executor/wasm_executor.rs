@@ -1,9 +1,14 @@
-use anyhow::Result;
-
-use wasmer::{Instance, Module, Store};
-use wasmer_wasi::WasiState;
+use anyhow::{anyhow, Result};
 
 use idns_eth_sqlite::ipfs_get_content;
+use std::sync::{Arc, Mutex};
+use wasmer::{
+    imports, wat2wasm, Array, Function, FunctionType, Instance, Module, Store, Type, Val, Value,
+    ValueType, WasmPtr, WasmerEnv,
+};
+use wasmer_wasi::WasiState;
+
+use idns_eth_core::idns_home_path;
 
 pub struct WasmExecutor {}
 
@@ -16,30 +21,19 @@ impl WasmExecutor {
 
 impl WasmExecutor {
     async fn _execute(&self, instance: Instance) -> Result<String> {
+        tracing::error!("idns_main");
         //prepare
-        if let Ok(prepare) = instance.exports.get_function("prepare") {
-            //调用函数,获取返回结果
-            if let Ok(response) = prepare.call(&[]) {
-                //
-            } else {
-                //执行失败
-            }
-            //
-        } else {
-            //获取函数失败
-        }
-        //prepare
-        if let Ok(start) = instance.exports.get_function("start") {
-            //调用函数,获取返回结果
-            if let Ok(response) = start.call(&[]) {
-                //
-            } else {
-                //执行失败
-            }
-            //
-        } else {
-            //获取函数失败
-        }
+        let idns_main = instance
+            .exports
+            .get_function("idns_main")
+            .map_err(|err| anyhow!("获取函数失败:{}", err))?;
+
+        //调用函数,获取返回结果ValueType::
+        let response = idns_main
+            .call(&[])
+            .map_err(|err| anyhow!("执行失败:{}", err))?;
+
+        tracing::error!("{:?}", response);
         Ok(String::new())
     }
 }
@@ -50,29 +44,25 @@ impl WasmExecutor {
         let wasm_bytes = ipfs_get_content(&wasm_content_id).await?;
         // Create a Store.
         let store = Store::default();
-        //
-        if let Ok(module) = Module::new(&store, wasm_bytes) {
-            //s
-            let mut wasi_env = WasiState::new("hello")
-                // .args(&["world"])
-                // .env("KEY", "Value")
-                .finalize()
-                .unwrap();
-            //
-            if let Ok(import_object) = wasi_env.import_object(&module) {
-                //构造实例
-                if let Ok(instance) = Instance::new(&module, &import_object) {
-                    // 获取调用函数
-                    return self._execute(instance).await;
-                } else {
-                    //创建实例失败
-                }
-            } else {
-                //导入函数失败
-            }
-        } else {
-            //创建模块失败
-        }
-        Ok(String::new())
+        //创建模块
+        let module =
+            Module::new(&store, wasm_bytes).map_err(|err| anyhow!("创建模块失败:{}", err))?;
+
+        let mut wasi_env = WasiState::new("idns_wasm")
+            .args(&["world"])
+            .env("IDNS_HOME", format!("{:?}", idns_home_path()?).as_str())
+            .finalize()
+            .map_err(|err| anyhow!("wasi_env:{}", err))?;
+
+        let import_object = wasi_env
+            .import_object_for_all_wasi_versions(&module)
+            .map_err(|err| anyhow!("import_object:{}", err))?;
+        //构造实例
+        let instance = Instance::new(&module, &import_object)
+            .map_err(|err| anyhow!("创建实例失败:{}", err))?;
+
+        // 获取调用函数
+        tracing::debug!("执行wasm函数");
+        return self._execute(instance).await;
     }
 }

@@ -8,6 +8,7 @@ members = [
     "crates/idns-devices",
     "crates/idns-wasmer",
     "crates/idns-node",
+    "crates/idns-rpc-api",
     "crates/simple-external-impl",
     "bins/idns-cli",
 ]

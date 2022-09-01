@@ -15,16 +15,16 @@ impl TaskServiceImpl {
 }
 
 impl TaskServiceImpl {
-    pub fn list_tasks(&self, device_uuid: &String) -> Result<Vec<TaskEntity>> {
+    pub fn list_tasks(&self, device_uuid: &String, status: u32) -> Result<Vec<TaskEntity>> {
         let arc_conn = self.connection.clone();
         _schema(&arc_conn)?;
         //获取conn
         let mut stmt = arc_conn.prepare(
-            "SELECT id, owner_id, wasm_cid, name, icon_url, gas, target_device, trade_no,target_os_type,category FROM tasks where target_device = ?1 and status = 1",
+            "SELECT id, owner_id, wasm_cid, name, icon_url, gas, target_device, trade_no,target_os_type,category,cron_expr FROM tasks where target_device = ?1 and status = ?2 order by id, status",
         )?;
         let mut res = Vec::<TaskEntity>::new();
 
-        let _iter = stmt.query_map([device_uuid], |row| {
+        let _iter = stmt.query_map((device_uuid, status), |row| {
             Ok(TaskEntity {
                 id: row.get(0)?,
                 owner_id: row.get(1)?,
@@ -36,6 +36,7 @@ impl TaskServiceImpl {
                 trade_no: row.get(7)?,
                 target_os_type: row.get(8)?,
                 category: row.get(9)?,
+                cron_expr: row.get(10)?,
             })
         })?;
         for item in _iter {
@@ -48,7 +49,7 @@ impl TaskServiceImpl {
         let arc_conn = self.connection.clone();
         _schema(&arc_conn)?;
         let mut stmt = arc_conn.prepare(
-            "SELECT id, owner_id, wasm_cid, name, icon_url, gas, target_device, trade_no,target_os_type,category FROM tasks where target_device = ?1 and status = 0",
+            "SELECT id, owner_id, wasm_cid, name, icon_url, gas, target_device, trade_no,target_os_type,category,cron_expr FROM tasks where target_device = ?1 and status = 0",
         )?;
         let mut res = Vec::<TaskEntity>::new();
 
@@ -64,6 +65,7 @@ impl TaskServiceImpl {
                 trade_no: row.get(7)?,
                 target_os_type: row.get(8)?,
                 category: row.get(9)?,
+                cron_expr: row.get(10)?,
             });
             Ok(1)
         })?;
@@ -106,8 +108,8 @@ impl TaskServiceImpl {
         let arc_conn = self.connection.clone();
 
         arc_conn.execute(
-            "INSERT INTO devices (owner_id, wasm_cid, name, icon_url, gas, target_device, trade_no,target_os_type,category) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)",
-            (&task.owner_id, &task.wasm_cid, &task.name, &task.icon_url, &task.gas, &task.target_device,&task.trade_no,&task.target_os_type,&task.category),
+            "INSERT INTO devices (owner_id, wasm_cid, name, icon_url, gas, target_device, trade_no,target_os_type,category,cron_expr) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10)",
+            (&task.owner_id, &task.wasm_cid, &task.name, &task.icon_url, &task.gas, &task.target_device,&task.trade_no,&task.target_os_type,&task.category, &task.cron_expr),
         )?;
         Ok(1)
     }
@@ -120,8 +122,8 @@ impl TaskServiceImpl {
         let arc_conn = self.connection.clone();
 
         arc_conn.execute(
-            "UPDATE devices SET owner_id = ?1, wasm_cid = ?2, name = ?3, icon_url = ?4, gas = ?5, target_device = ?6, trade_no = ?7, target_os_type = ?8, category = ?9 WHERE id = ?10",
-            (&task.owner_id, &task.wasm_cid, &task.name, &task.icon_url, &task.gas, &task.target_device,&task.trade_no,&task.target_os_type,&task.category, task.id),
+            "UPDATE devices SET owner_id = ?1, wasm_cid = ?2, name = ?3, icon_url = ?4, gas = ?5, target_device = ?6, trade_no = ?7, target_os_type = ?8, category = ?9, cron_expr=?10 WHERE id = ?11",
+            (&task.owner_id, &task.wasm_cid, &task.name, &task.icon_url, &task.gas, &task.target_device,&task.trade_no,&task.target_os_type,&task.category, &task.cron_expr, task.id),
         )?;
         Ok(1)
     }
@@ -134,6 +136,7 @@ fn _schema(conn: &Connection) -> Result<()> {
         id    INTEGER PRIMARY KEY,
         owner_id     TEXT DEFAULT '',
         wasm_cid     TEXT DEFAULT '',
+        cron_expr    TEXT DEFAULT '* 0/10 * * * ? *',
         name        TEXT NOT NULL,
         icon_url     TEXT DEFAULT '',
         gas     INTEGER DEFAULT 0,

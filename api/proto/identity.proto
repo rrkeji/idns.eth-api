@@ -142,3 +142,50 @@ message VerifiableCredentialEntity{
 message ListVerifiableCredentialsResponse{
     repeated VerifiableCredentialEntity verifiable_credentials = 1;
 }
+
+message ApplicationEntity{
+    string id = 1;
+    string provider = 2;
+    string application_cid = 3;
+    string application_type = 4;
+    string name = 5;
+    string avatar = 6;
+    repeated string labels = 7;
+    string signature = 8;
+    string description = 9;
+    uint64 create_at = 10;
+}
+
+message ListApplicationsResponse{
+    repeated ApplicationEntity applications = 1;
+}
+
+message ApplicationCreateRequest{
+    string provider = 2;
+    string application_cid = 3;
+    string application_type = 4;
+    string name = 5;
+    string avatar = 6;
+    repeated string labels = 7;
+    string signature = 8;
+    string description = 9;
+}
+
+message ApplicationUpdateRequest{
+    string id = 1;
+    string provider = 2;
+    string application_cid = 3;
+    string application_type = 4;
+    string name = 5;
+    string avatar = 6;
+    repeated string labels = 7;
+    string signature = 8;
+    string description = 9;
+}
+
+message ApplicationSearchRequest{
+    map<string,string> conditions = 1;
+    repeated string sorts = 2;
+    uint32 page = 3;
+    uint32 page_size = 4;
+}

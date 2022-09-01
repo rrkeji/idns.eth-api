@@ -1,4 +1,3 @@
-// use crate::grpc::{RpcCommand, RpcCommandResponse};
 use anyhow::{anyhow, Context, Result};
 use bytes::Bytes;
 use idns_eth_api::idns::system::{Command, CommandResponse};

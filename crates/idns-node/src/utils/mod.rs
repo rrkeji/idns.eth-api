@@ -1,3 +1,5 @@
+pub(crate) mod zip;
+
 use anyhow::{anyhow, Result};
 use idns_eth_core::account::IdnsToken;
 use idns_eth_sqlite::Connection;

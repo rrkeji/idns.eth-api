@@ -187,7 +187,7 @@ impl ExternalApiIdentity {
 }
 
 /// 内部请求的方法
-pub(crate) async fn identity_get_request(path: &str) -> Result<String> {
+pub async fn identity_get_request(path: &str) -> Result<String> {
     //请求地址
     let uri = format!("{}{}", IDENTITY_URL, path).parse::<http::Uri>()?;
 

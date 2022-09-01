@@ -1,7 +1,7 @@
 #[macro_use]
 extern crate lazy_static;
 
-pub(crate) mod http;
+pub mod http;
 pub(crate) mod node;
 pub(crate) mod rpc;
 pub(crate) mod services;
@@ -17,14 +17,8 @@ pub(crate) use idns_eth_core as idns_core;
 pub(crate) use idns_eth_networks as networks;
 pub(crate) use idns_eth_sqlite as sqlite;
 pub(crate) use utils::*;
-//
-pub mod grpc {
-    pub const FILE_DESCRIPTOR_SET: &'static [u8] =
-        tonic::include_file_descriptor_set!("idns_node_descriptor");
 
-    //
-    tonic::include_proto!("idns.node.rpc");
-}
+pub(crate) use idns_eth_rpc_api::grpc;
 
 use anyhow::{anyhow, Context, Result};
 use idns_eth_core::account::IdnsToken;
@@ -61,18 +55,6 @@ pub fn init_node(token: &IdnsToken) -> Result<()> {
     let arc_conn = Arc::new(Connection::open(token)?);
     crate::utils::set_connection(arc_conn.clone()).context("启动系统数据库失败")?;
 
-    //获取设备ID
-    let device_id = crate::node::get_device_node_id()?;
-    let tun_ip = crate::node::get_tun_ip(&device_id)?;
-    //启动网络服务
-    tracing::debug!("启动网络服务");
-    //获取设备的一些配置信息
-    idns_eth_networks::launch(&tun_ip).context("启动网络服务失败")?;
-
-    //启动注册wasmer服务
-    //启动设备服务
-    crate::node::init_device_node(&tun_ip);
-
     // TODO 后续修改为消息的形式,
     let user_phrase = idns_eth_core::get_user_phrase(&crate::get_password()?)?;
     simple_external_impl::set_external_api_identity_signature(idns_eth_core::get_signature_nonce(
@@ -83,9 +65,24 @@ pub fn init_node(token: &IdnsToken) -> Result<()> {
     tracing::debug!("启动HTTP文件服务");
     http::Server::new().start()?;
 
+    //获取设备ID
+    let device_id = crate::node::get_device_node_id()?;
+    let tun_ip = crate::node::get_tun_ip(&device_id)?;
+    //启动网络服务
+    tracing::debug!("启动网络服务");
+    //获取设备的一些配置信息
+    idns_eth_networks::launch(&tun_ip).context("启动网络服务失败")?;
+
+    //启动设备服务
+    crate::node::init_device_node(&tun_ip);
+
     //启动核心应用服务
     tracing::debug!("启动核心应用服务");
     tokio::spawn(async move {
+        //启动注册wasmer服务
+        // idns_eth_wasmer::SCHEDULER_DEFAULT
+        //     .loading(arc_conn.clone(), &device_id)
+        //     .await;
         let _ = crate::rpc::server_start().await;
     });
 
@@ -103,18 +100,6 @@ pub async fn init_node_async(token: &IdnsToken) -> Result<()> {
     let arc_conn = Arc::new(Connection::open(token)?);
     crate::utils::set_connection(arc_conn.clone()).context("启动系统数据库")?;
 
-    //获取设备ID
-    let device_id = crate::node::get_device_node_id()?;
-    let tun_ip = crate::node::get_tun_ip(&device_id)?;
-    //启动网络服务
-    tracing::debug!("启动网络服务");
-    //获取设备的一些配置信息
-    idns_eth_networks::launch(&tun_ip).context("启动网络服务失败")?;
-
-    //启动注册wasmer服务
-    //启动设备服务
-    crate::node::init_device_node(&tun_ip);
-
     // TODO 后续修改为消息的形式,
     let user_phrase = idns_eth_core::get_user_phrase(&crate::get_password()?)?;
     simple_external_impl::set_external_api_identity_signature(idns_eth_core::get_signature_nonce(
@@ -124,6 +109,22 @@ pub async fn init_node_async(token: &IdnsToken) -> Result<()> {
     //启动HTTP文件服务
     tracing::debug!("启动HTTP文件服务");
     http::Server::new().start()?;
+
+    //获取设备ID
+    let device_id = crate::node::get_device_node_id().context("获取设备ID失败")?;
+    let tun_ip = crate::node::get_tun_ip(&device_id).context("获取tun IP失败")?;
+    //启动网络服务
+    tracing::debug!("启动网络服务");
+    //获取设备的一些配置信息
+    idns_eth_networks::launch(&tun_ip).context("启动网络服务失败")?;
+
+    //启动注册wasmer服务
+    // idns_eth_wasmer::SCHEDULER_DEFAULT
+    //     .loading(arc_conn.clone(), &device_id)
+    //     .await;
+    //启动设备服务
+    crate::node::init_device_node(&tun_ip);
+
     //启动核心应用服务
     tracing::debug!("启动核心应用服务");
     crate::rpc::server_start()

@@ -13,6 +13,7 @@ message TaskEntity{
     string target_device = 8;
     string target_os_type = 9;
     string category = 10;
+    string cron_expr = 11;
 }
 
 message ListTasksResponse{
