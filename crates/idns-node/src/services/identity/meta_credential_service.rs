@@ -79,8 +79,9 @@ impl Handler for MetaCredentialServiceImpl {
         if service_name == "idns.system.identity.meta_credential" {
             if method_name == "meta_credential_list" {
                 let request = StringMessage::decode(Bytes::from(message))?;
+                let source_identity = crate::utils::get_identity()?.0;
                 //
-                return response(self.meta_credential_list(&request.data).await.map(|r| {
+                return response(self.meta_credential_list(&source_identity).await.map(|r| {
                     ListMetaCredentialsResponse {
                         meta_credentials: r,
                     }
@@ -88,20 +89,25 @@ impl Handler for MetaCredentialServiceImpl {
             } else if method_name == "query_one_meta_credential" {
                 let request = StringPairMessage::decode(Bytes::from(message))?;
                 //
+                let source_identity = crate::utils::get_identity()?.0;
+
                 return response(
-                    self.query_one_meta_credential(&request.first, &request.second)
+                    self.query_one_meta_credential(&source_identity, &request.second)
                         .await,
                 );
             } else if method_name == "remove_meta_credential" {
                 let request = StringPairMessage::decode(Bytes::from(message))?;
                 //
+                let source_identity = crate::utils::get_identity()?.0;
+
                 return response(
-                    self.remove_meta_credential(&request.first, &request.second)
+                    self.remove_meta_credential(&source_identity, &request.second)
                         .await
                         .map(|r| BoolMessage { data: r }),
                 );
             } else if method_name == "create_meta_credential" {
-                let request = MetaCredentialCreateRequest::decode(Bytes::from(message))?;
+                let mut request = MetaCredentialCreateRequest::decode(Bytes::from(message))?;
+                request.source_identity = crate::utils::get_identity()?.0;
                 //
                 return response(
                     self.create_meta_credential(&request)
@@ -109,7 +115,8 @@ impl Handler for MetaCredentialServiceImpl {
                         .map(|r| BoolMessage { data: r }),
                 );
             } else if method_name == "update_meta_credential" {
-                let request = MetaCredentialUpdateRequest::decode(Bytes::from(message))?;
+                let mut request = MetaCredentialUpdateRequest::decode(Bytes::from(message))?;
+                request.source_identity = crate::utils::get_identity()?.0;
                 //
                 return response(
                     self.update_meta_credential(&request)

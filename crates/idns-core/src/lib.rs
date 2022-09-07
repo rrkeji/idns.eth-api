@@ -1,5 +1,6 @@
 pub mod account;
 pub mod identity;
+pub mod ipfs;
 pub mod kvstore;
 pub mod utils;
 

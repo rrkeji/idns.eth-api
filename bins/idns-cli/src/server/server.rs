@@ -2,7 +2,7 @@ use crate::Config;
 use anyhow::{Context, Result};
 use idns_eth_sdk::{
     idns_core::account::{ALICE_PHRASE, ALICE_PUBLIC_KEY},
-    import_and_login, init_application, is_imported, login_by_password,
+    init_application, is_imported, login_by_password,
 };
 use prost::Message;
 use std::collections::HashMap;

@@ -6,8 +6,7 @@ use idns_eth_sdk::{
         account::{IdnsToken, ALICE_PHRASE, ALICE_PUBLIC_KEY},
         idns_home_path,
     },
-    idns_eth_request, import_and_login, init_application, init_node, is_imported,
-    login_by_password,
+    idns_eth_request, init_application, init_node, is_imported, login_by_password,
 };
 use interprocess::local_socket::{LocalSocketListener, LocalSocketStream};
 use prost::Message;
@@ -56,9 +55,12 @@ pub async fn main() -> Result<()> {
             .with_context(|| format!("Failed to login_by_password {}", "123"))?
     } else {
         //输入助记词和密码
-        import_and_login(&String::from(ALICE_PHRASE), &String::from("123"))
-            .await
-            .with_context(|| format!("Failed to import_and_login {}", "123"))?
+        // import_and_login(&String::from(ALICE_PHRASE), &String::from("123"))
+        //     .await
+        //     .with_context(|| format!("Failed to import_and_login {}", "123"))?
+        login_by_password(&String::from("123"))
+        .await
+        .with_context(|| format!("Failed to login_by_password {}", "123"))?
     };
 
     //登录成功后初始化节点
