@@ -8,16 +8,9 @@ use serde::{Deserialize, Serialize};
 use serde_json::json;
 
 #[derive(Debug, Deserialize, Serialize)]
-struct ObjectId {
-    //$oid
-    #[serde(rename(deserialize = "$oid"))]
-    pub oid: String,
-}
-
-#[derive(Debug, Deserialize, Serialize)]
 struct ApplicationJsonEntity {
     #[serde(rename(deserialize = "_id"))]
-    pub id: ObjectId,
+    pub id: crate::utils::ObjectId,
     pub provider: String,
     pub application_type: String,
     pub name: String,

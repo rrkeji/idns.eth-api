@@ -8,6 +8,8 @@ use serde_json::json;
 
 #[derive(Debug, Deserialize, Serialize)]
 struct AttributeJsonEntity {
+    #[serde(rename(deserialize = "_id"))]
+    pub id: crate::utils::ObjectId,
     pub source_identity: String,
     pub name: String,
     pub attribute_type: String,
@@ -31,6 +33,7 @@ impl ExternalApiAttribute {
             Ok(list
                 .iter()
                 .map(|item| AttributeEntity {
+                    id: item.id.oid.clone(),
                     source_identity: item.source_identity.clone(),
                     name: item.name.clone(),
                     attribute_type: item.attribute_type.clone(),
@@ -51,6 +54,7 @@ impl ExternalApiAttribute {
             //
             let item: AttributeJsonEntity = serde_json::from_str(&json_str)?;
             Ok(AttributeEntity {
+                id: item.id.oid.clone(),
                 source_identity: item.source_identity.clone(),
                 name: item.name.clone(),
                 attribute_type: item.attribute_type.clone(),

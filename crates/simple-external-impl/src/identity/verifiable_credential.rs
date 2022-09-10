@@ -6,6 +6,8 @@ use serde_json::json;
 
 #[derive(Debug, Deserialize, Serialize)]
 struct VerifiableCredentialJsonEntity {
+    #[serde(rename(deserialize = "_id"))]
+    pub id: crate::utils::ObjectId,
     pub source_identity: String,
     pub holder_identity: String,
     pub meta_credential_name: String,
@@ -32,6 +34,7 @@ impl ExternalApiVerifiableCredential {
             Ok(list
                 .iter()
                 .map(|item| VerifiableCredentialEntity {
+                    id: item.id.oid.clone(),
                     source_identity: item.source_identity.clone(),
                     holder_identity: item.holder_identity.clone(),
                     meta_credential_name: item.meta_credential_name.clone(),
@@ -59,6 +62,7 @@ impl ExternalApiVerifiableCredential {
             Ok(list
                 .iter()
                 .map(|item| VerifiableCredentialEntity {
+                    id: item.id.oid.clone(),
                     source_identity: item.source_identity.clone(),
                     holder_identity: item.holder_identity.clone(),
                     meta_credential_name: item.meta_credential_name.clone(),
@@ -84,6 +88,7 @@ impl ExternalApiVerifiableCredential {
             //
             let item: VerifiableCredentialJsonEntity = serde_json::from_str(&json_str)?;
             Ok(VerifiableCredentialEntity {
+                id: item.id.oid.clone(),
                 source_identity: item.source_identity.clone(),
                 holder_identity: item.holder_identity.clone(),
                 meta_credential_name: item.meta_credential_name.clone(),

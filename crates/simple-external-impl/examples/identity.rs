@@ -1,6 +1,6 @@
 use anyhow::Result;
 
-use simple_external_impl::identity::ExternalApiIdentity;
+use simple_external_impl::identity::{ExternalApiIdentity, ExternalApiVerifiableCredential};
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -8,14 +8,15 @@ async fn main() -> Result<()> {
         .with_max_level(tracing::Level::DEBUG)
         .init();
     tracing::info!("测试.");
-    let res = ExternalApiIdentity {
-        public_key: String::from(
-            "7a0b9c92b65218204416d335c7b85ef9d47da1ba92bbb2b3a23224c6cd38ce54",
-        ),
-        signature: String::from(""),
-        nonce: String::from(""),
-    }
-    .identities()
+    simple_external_impl::set_external_api_identity_signature((
+        String::from(""),
+        String::from(""),
+        String::from(""),
+    ))?;
+    // let res = ExternalApiIdentity {}.identities().await;
+    let res = ExternalApiVerifiableCredential::verifiable_credential_list_by_holder(&String::from(
+        "did:idns:CzsKrSUkffKnzPMZJWhNAgfgGAdYvdX7YHzYNZZJYSws",
+    ))
     .await;
     tracing::info!("返回:{:?}.", res);
     Ok(())

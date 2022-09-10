@@ -9,6 +9,8 @@ use serde_json::json;
 
 #[derive(Debug, Deserialize, Serialize)]
 struct MetaCredentialJsonEntity {
+    #[serde(rename(deserialize = "_id"))]
+    pub id: crate::utils::ObjectId,
     pub source_identity: String,
     pub name: String,
     pub credential_type: String,
@@ -39,6 +41,7 @@ impl ExternalApiMetaCredential {
             Ok(list
                 .iter()
                 .map(|item| MetaCredentialEntity {
+                    id: item.id.oid.clone(),
                     source_identity: item.source_identity.clone(),
                     name: item.name.clone(),
                     credential_type: item.credential_type.clone(),
@@ -69,6 +72,7 @@ impl ExternalApiMetaCredential {
             //
             let item: MetaCredentialJsonEntity = serde_json::from_str(&json_str)?;
             Ok(MetaCredentialEntity {
+                id: item.id.oid.clone(),
                 source_identity: item.source_identity.clone(),
                 name: item.name.clone(),
                 credential_type: item.credential_type.clone(),
