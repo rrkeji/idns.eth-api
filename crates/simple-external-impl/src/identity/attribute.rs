@@ -1,6 +1,6 @@
 use anyhow::{anyhow, Context, Result};
 use idns_eth_api::idns::identity::{
-    AttributeCreateRequest, AttributeEntity, AttributeUpdateRequest, ListAttributesResponse,
+    AttributeCreateRequest, AttributeEntity, AttributeUpdateRequest,
 };
 
 use serde::{Deserialize, Serialize};

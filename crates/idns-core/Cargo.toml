@@ -45,5 +45,8 @@ sp-core = { version = "6.0.0", features = ["std"] }
 idns-eth-api = { path = "../../api", version = "*" }
 simple-external-impl = { path = "../simple-external-impl", version = "0.1.0" }
 
+#IPFS
+ipfs-api-backend-hyper = { version = "0.5", features = ["with-send-sync"] }
+
 [dev-dependencies]
 tokio-test = "*"

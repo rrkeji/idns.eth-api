@@ -61,7 +61,7 @@ pub async fn login(application_key: &str, public_key: &str, phrase: &str) -> Res
             tracing::debug!("{}", body);
             //本地校验public key
             if let Ok(token) =
-                _kvstore_post_request("/login/app", "application/json;charset=UTF-8", body, None)
+                _kvstore_post_request("/login", "application/json;charset=UTF-8", body, None)
                     .await
                     .with_context(|| format!("Fail login with public key {}!", public_key))
             {

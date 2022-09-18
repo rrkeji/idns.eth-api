@@ -1,7 +1,6 @@
 use anyhow::{anyhow, Context, Result};
 use idns_eth_api::idns::identity::{
-    ListMetaCredentialsResponse, MetaCredentialCreateRequest, MetaCredentialEntity,
-    MetaCredentialUpdateRequest,
+    MetaCredentialCreateRequest, MetaCredentialEntity, MetaCredentialUpdateRequest,
 };
 
 use serde::{Deserialize, Serialize};

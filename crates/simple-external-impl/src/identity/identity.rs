@@ -1,8 +1,6 @@
 use anyhow::{anyhow, Context, Result};
 use hyper::{service::Service, Body, Client, Request};
-use idns_eth_api::idns::identity::{
-    IdentityCreateRequest, IdentityEntity, IdentityUpdateRequest, ListIdentitiesResponse,
-};
+use idns_eth_api::idns::identity::{IdentityCreateRequest, IdentityEntity, IdentityUpdateRequest};
 
 use crate::constants::IDENTITY_URL;
 

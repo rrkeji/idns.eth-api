@@ -1,7 +1,6 @@
 use anyhow::{anyhow, Context, Result};
 use idns_eth_api::idns::identity::{
-    ApplicationCreateRequest, ApplicationEntity, ApplicationSearchRequest,
-    ApplicationUpdateRequest, ListApplicationsResponse,
+    ApplicationCreateRequest, ApplicationEntity, ApplicationSearchRequest, ApplicationUpdateRequest,
 };
 
 use serde::{Deserialize, Serialize};
